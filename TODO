@@ -1,0 +1,3 @@
+SERVER:
+- add password protection for shared system
+- prevent interference of multiple media players (when one starts playing suspend all others)

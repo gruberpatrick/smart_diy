@@ -1,0 +1,20 @@
+{
+  "oRhythmbox": {
+    "sName": "Rhythmbox",
+    "sPath": "./lib/rhythmbox.js",
+    "aParams": ["/home/p"],
+    "sGUI": "rhythmbox"
+  },
+  "oGate":{
+    "sName": "Gate",
+    "sPath": "./lib/gate.js",
+    "aParams": [],
+    "sGUI": "gate"
+  },
+  "oYoutube":{
+    "sName": "YouTube",
+    "sPath": "./lib/youtube.js",
+    "aParams": [],
+    "sGUI": "youtube"
+  }
+}
