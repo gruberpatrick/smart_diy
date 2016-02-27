@@ -1,8 +1,20 @@
 {
-  "whiskeyriver": {
-    "sName": "Patrick's Computer",
+  "pittman-EB1036": {
+    "sName": "Pittman Server",
     "aModules": [
-      "oRhythmbox", "oYoutube"
+      "oRhythmbox"
+    ]
+  },
+  "pi":{
+    "sName": "Mobile / Development",
+    "aModules":[
+      "oRhythmbox","oYoutube","oGate"
+    ]
+  },
+  "whiskeyriver":{
+    "sName": "Patrick Laptop",
+    "aModules":[
+      "oRhythmbox"
     ]
   }
 }
