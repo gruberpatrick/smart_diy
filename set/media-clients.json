@@ -11,9 +11,9 @@
       "oRhythmbox","oYoutube","oGate"
     ]
   },
-  "whiskeyriver":{
-    "sName": "Patrick Laptop",
-    "aModules":[
+  "blackbird":{
+    "sName": "Patrick's Laptop",
+    "aModules": [
       "oRhythmbox"
     ]
   }

@@ -52,7 +52,7 @@ oNetwork.oSocket.initializeWebSocket(oSetup.lServerPort, function(oWS){
   console.log("[SYSTEM] Traffic:");
   console.log(oData);
   if(oData.sType == "init"){
-    if(typeof oData.sName == "undefined" || typeof oMediaClients[oData.sName] == "undefined") return;     
+    if(typeof oData.sName == "undefined" || typeof oMediaClients[oData.sName] == "undefined") return;
     oMediaClients[oData.sName]["bConnected"] = true;
     oMediaClients[oData.sName]["sKey"] = sKey;
     var aResponseTemp = {};
