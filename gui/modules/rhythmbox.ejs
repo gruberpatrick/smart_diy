@@ -1,6 +1,8 @@
 <style type="text/css" rel="stylesheet">
   #song_display:before{content:"► ";}
-  #result_box{margin-top:0;}
+  #result_box{margin-top:10px;}
+  #show_song{margin-top:10px;}
+  #search_box{margin-bottom:0;}
 </style>
 
 <div id="player">
@@ -15,6 +17,11 @@
   <div id="volume_inc" class="button quarter">+</div>
   <div class="clear"></div>
   <div class="line"></div>
-  <input type="text" id="search_box" placeholder="Search album, artist or title" />
+  <div id="tab_song" class="button half active">Songs</div>
+  <div id="tab_playlists" class="button half">Playlists</div>
+  <div class="clear"></div>
+  <div id="show_song">
+    <input type="text" id="search_box" placeholder="Search album, artist or title" />
+  </div>
   <div id="result_box"></div>
 </div>

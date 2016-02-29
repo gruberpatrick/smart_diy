@@ -1,7 +1,7 @@
 function Module(){
-  
+
   this.reloadInterval = null;
-  
+
   this.handleMessage = function(sData, lFlags){
     var oResponse = JSON.parse(sData.data);
     if(oResponse.sType != "response") return;
@@ -15,14 +15,18 @@ function Module(){
       document.getElementById("result_box").innerHTML += "<div><div class=\"button half\" onclick=\"oModule.playAll();\">Play all</div><div class=\"button half\" onclick=\"oModule.clearAll();\">Clear</div></div>";
       for(var lIndex in oResponse.oResponse.oData) document.getElementById("result_box").innerHTML += "<div class=\"element\" rel-location=\"" + oResponse.oResponse.oData[lIndex].location + "\" onclick=\"oModule.playSong('" + oResponse.oResponse.oData[lIndex].location + "')\">" + oResponse.oResponse.oData[lIndex].artist + " - " + oResponse.oResponse.oData[lIndex].title + "</div>";
       document.getElementById("result_box").innerHTML += "<div class=\"clear\"></div>";
+    }else if(oResponse.sCommand == "getPlaylists" && oResponse.oResponse.oData != {}){
+      document.getElementById("result_box").innerHTML = "";
+      for(var lIndex in oResponse.oResponse.oData) document.getElementById("result_box").innerHTML += "<div class=\"element\" onclick=\"oModule.playPlaylist('" + oResponse.oResponse.oData[lIndex] + "')\">" + oResponse.oResponse.oData[lIndex] + "</div>";
+      document.getElementById("result_box").innerHTML += "<div class=\"clear\"></div>";
     }
   };
-  
+
   this.cleanup = function(){
     if(this.reloadInterval != null)
       clearInterval(this.reloadInterval);
   };
-  
+
   this.requestCurrentSong = function(){
     sendRequest("control", oData.sRoom, oData.sModuleName,"currentSong");
   }
@@ -31,6 +35,10 @@ function Module(){
   }
   this.playSong = function(sUri){
     sendRequest("control", oData.sRoom, oData.sModuleName,"playUri", [sUri]);
+    this.requestCurrentSong();
+  }
+  this.playPlaylist = function(sName){
+    sendRequest("control", oData.sRoom, oData.sModuleName, "playPlaylist", [sName]);
     this.requestCurrentSong();
   }
   this.playAll = function(){
@@ -46,7 +54,7 @@ function Module(){
   this.clearAll = function(){
     document.getElementById("result_box").innerHTML = "";
   }
-  
+
   this.init = function(){
     this.requestCurrentSong();
     this.requestCurrentVolume();
@@ -81,10 +89,24 @@ function Module(){
       this.blur();
       sendRequest("control", oData.sRoom, oData.sModuleName, "searchSongs", [document.getElementById("search_box").value]);
     };
+    document.getElementById("tab_song").onclick = function(){
+      this.clearAll();
+      document.getElementById("show_song").style["display"] = "block";
+      document.getElementById("tab_song").className += " active";
+      document.getElementById("tab_playlists").className = "button half";
+      sendRequest("control", oData.sRoom, oData.sModuleName, "searchSongs", [document.getElementById("search_box").value]);
+    }.bind(this);
+    document.getElementById("tab_playlists").onclick = function(){
+      this.clearAll();
+      document.getElementById("show_song").style["display"] = "none";
+      document.getElementById("tab_song").className = "button half";
+      document.getElementById("tab_playlists").className += " active";
+      sendRequest("control", oData.sRoom, oData.sModuleName, "getPlaylists");
+    }.bind(this);
   };
-  
+
   this.init();
-  
+
 };
 
 oModule = new Module();
