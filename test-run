@@ -10,3 +10,6 @@ sleep 1
 
 echo "Starting GUI engine..."
 sudo nodejs gui.js &
+
+read
+sudo killall nodejs
