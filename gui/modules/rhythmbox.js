@@ -1,6 +1,10 @@
 function Module(){
 
   this.reloadInterval = null;
+  this.aSettingsButtons = [
+    "<div onclick=\"oModule.clearQueue();\" class=\"button\">Clear Queue</div>",
+    "<div onclick=\"oModule.reloadDB();\" class=\"button\">Reload DB</div>"
+  ];
 
   this.handleMessage = function(sData, lFlags){
     var oResponse = JSON.parse(sData.data);
@@ -54,6 +58,12 @@ function Module(){
   this.clearAll = function(){
     document.getElementById("result_box").innerHTML = "";
   }
+  this.clearQueue = function(){
+    sendRequest("control", oData.sRoom, oData.sModuleName, "clearQueue", []);
+  };
+  this.reloadDB = function(){
+    sendRequest("control", oData.sRoom, oData.sModuleName, "reloadDB", []);
+  };
 
   this.init = function(){
     this.requestCurrentSong();
@@ -87,21 +97,35 @@ function Module(){
     document.getElementById("search_box").onkeyup = function(e){
       if(e.keyCode != 13) return;
       this.blur();
-      sendRequest("control", oData.sRoom, oData.sModuleName, "searchSongs", [document.getElementById("search_box").value]);
+      if(document.getElementById("search_box").value.length >= 3)
+        sendRequest("control", oData.sRoom, oData.sModuleName, "searchSongs", [document.getElementById("search_box").value]);
     };
     document.getElementById("tab_song").onclick = function(){
       this.clearAll();
       document.getElementById("show_song").style["display"] = "block";
       document.getElementById("tab_song").className += " active";
-      document.getElementById("tab_playlists").className = "button half";
-      sendRequest("control", oData.sRoom, oData.sModuleName, "searchSongs", [document.getElementById("search_box").value]);
+      document.getElementById("tab_playlists").className = "button third";
+      document.getElementById("tab_settings").className = "button third";
+      if(document.getElementById("search_box").value.length >= 3)
+        sendRequest("control", oData.sRoom, oData.sModuleName, "searchSongs", [document.getElementById("search_box").value]);
     }.bind(this);
     document.getElementById("tab_playlists").onclick = function(){
       this.clearAll();
       document.getElementById("show_song").style["display"] = "none";
-      document.getElementById("tab_song").className = "button half";
+      document.getElementById("tab_song").className = "button third";
+      document.getElementById("tab_settings").className = "button third";
       document.getElementById("tab_playlists").className += " active";
       sendRequest("control", oData.sRoom, oData.sModuleName, "getPlaylists");
+    }.bind(this);
+    document.getElementById("tab_settings").onclick = function(){
+      document.getElementById("show_song").style["display"] = "none";
+      document.getElementById("tab_song").className = "button third";
+      document.getElementById("tab_playlists").className = "button third";
+      document.getElementById("tab_settings").className += " active";
+      document.getElementById("result_box").innerHTML = "";
+      for(var lIndex in this.aSettingsButtons){
+        document.getElementById("result_box").innerHTML += this.aSettingsButtons[lIndex];
+      }
     }.bind(this);
   };
 

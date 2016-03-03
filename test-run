@@ -1,15 +1,12 @@
 echo "Starting server..."
-nodejs server.js &
+nodemon server.js &
 
 sleep 1
 
 echo "Starting local client..."
-nodejs client.js &
+nodemon client.js &
 
 sleep 1
 
 echo "Starting GUI engine..."
-sudo nodejs gui.js &
-
-read
-sudo killall nodejs
+nodemon nodejs gui.js &
