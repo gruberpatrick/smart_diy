@@ -2,7 +2,7 @@
 
 ## Description
 
-** Project still in early development.** Basic implementations working but will be extended in future versions.
+**Project still in early development.** Basic implementations working but will be extended in future versions.
 
 This project aims to provide a simple platform to create smart home systems based on NodeJS and the WebSocket standard.
 Remotes can easily be integrated, as long as they comply with the defined protocol.
@@ -50,6 +50,7 @@ The server returns a response if data needs to be returned. This may depend on t
 
 ## Future Implementations
 
+- change path for modules so all files will be located in "/modules/"
 - add password protection for shared system
 - prevent interference of multiple media players (when one starts playing suspend all others)
 - let server return answer containing logged in clients
