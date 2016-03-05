@@ -4,13 +4,15 @@
 
 **Project still in early development.** Basic implementations working but will be extended in future versions.
 
-This project aims to provide a simple platform to create smart home systems based on NodeJS and the WebSocket standard.
-Client nodes will enable modules (extend system over time) and add functionality to the system.
-Remotes can easily be integrated, as long as they comply with the defined protocol.
+- This project aims to provide a simple platform to create smart home systems based on NodeJS and the WebSocket standard.
+- The server acts as moderator between the clients and remotes. None of them directly access each other, they have to go through the server.
+- Client nodes will enable modules (extend system over time) and add functionality to the system.
+- Remotes can easily be integrated, as long as they comply with the defined protocol. The standard remotes are started with the "gui.js" script. This will open an express application that will handle calls of http://YOURIP:8080/ or http://localhost:8080/.
 
 ## The protocol
 
-The used protocol in the first version is rather simple. A client node has to log in on the server, providing his own name:
+This is version 0.1 of the protocol and will be extended as complexity of the system increases.
+A client node has to log in on the server, providing his own name:
 
 ```
 {
@@ -49,9 +51,15 @@ The server returns a response if data needs to be returned. This may depend on t
 }
 ```
 
-## Future Implementations
+## Future Implementations aka. TODO's
 
-- change path for modules so all files will be located in "/modules/"
 - add password protection for shared system
+- add package manager for modules
 - prevent interference of multiple media players (when one starts playing suspend all others)
 - let server return answer containing logged in clients
+
+## Screenshots
+
+- http://www.gruberpatrick.com/p/smart_diy/node-selection.png
+- http://www.gruberpatrick.com/p/smart_diy/module-selection.png
+- http://www.gruberpatrick.com/p/smart_diy/control.png

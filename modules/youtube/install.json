@@ -1,0 +1,15 @@
+{
+  "sModuleObject": "oYoutube",
+  "oModuleObject": {
+    "sName": "YouTube",
+    "sPath": "youtube.js",
+    "aParams": [],
+    "sGUI": "youtube"
+  },
+  "aRequirements": [
+    "youtube-dl", "vlc"
+  ],
+  "aNodePackages":[
+    "sync-exec"
+  ]
+}

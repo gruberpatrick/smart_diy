@@ -5,37 +5,6 @@ var oSetup = require("./set/setup.json");
 var oMediaClients = require("./set/media-clients.json");
 var oMediaModules = require("./set/media-modules.json");
 
-/*
- * The request protocol:
- *
- * {
- *   "sType": "init",
- *   "sName": "..."
- * }
- * {
- *   "sType": "control",
- *   "sTarget": "...",          // target for command as defined in set/media-clients.json
- *   ["sFrom": "...",]          // from added by server to deliver response
- *   "sMedia": "oRhythmbox",    // see set/media-modules.json for available modules
- *   "sCommand": "play"         // command depending on module
- *   "aParams": [...]           // params required by command
- * }
- *
- * The answer protocol:
- *
- * {
- *   "sType": "response",
- *   "sTarget": "...",          // target for command as defined in set/media-clients.json -> SWITCHED
- *   "sFrom": "...",            // from added by server to deliver response                -> WITH THIS ONE
- *   "sMedia": "oRhythmbox",    // see set/media-modules.json for available modules
- *   "sCommand": "play"         // command depending on module
- *   "aParams": [...]           // params required by command
- *   "oResponse": {             // response values
- *     "oData": [...]
- *   }
- * }
- *
- */
 function dataSwitch(oData, sKey){
   oData["sFrom"] = sKey;
   oNetwork.oSocket.clientSend(oMediaClients[oData.sTarget]["sKey"], oData);

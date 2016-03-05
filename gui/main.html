@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html>
-  
+
   <head>
     <title>SMART DIY</title>
-    <link rel="stylesheet" type="text/css" href="/static/style.css" />
+    <link rel="stylesheet" type="text/css" href="/gui/static/style.css" />
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-    
+
   </head>
-  
+
   <body>
-    
+
     <div id="header">SMART DIY</div>
-    
+
     <div id="content"></div>
-    
-    <script type="text/javascript" src="/static/ejs_production.js"></script>
+
+    <script type="text/javascript" src="/gui/static/ejs_production.js"></script>
     <script type="text/javascript">
-    
+
       // VARIABLES ---------------------------------------------------------
       var oData = {
         "oSetup":<%- JSON.stringify(oSetup) %>,
@@ -27,7 +27,7 @@
         "sModuleName":""
       };
       var oModule = {};
-    
+
       // WS ---------------------------------------------------------
       var oWS = new WebSocket("ws://<%= oSetup.sServerHost %>:4444");
       oWS.onopen = function(){
@@ -46,9 +46,9 @@
         console.log("[GUI] Error:");
         console.log(oErr);
       };
-    
+
       // FUNCTIONS ---------------------------------------------------------
-      
+
       function changeGUI(sLocation, sRoom, sMedia){
         if(typeof oModule.cleanup == "function")
           oModule.cleanup();
@@ -77,36 +77,36 @@
           return;
         var oJS = document.createElement("script");
         oJS.type = "text/javascript";
-        oJS.src = "/modules/" + sMedia + ".js";
-        
+        oJS.src = "/modules/" + sMedia + "/gui/" + sMedia + ".js";
+
         document.body.appendChild(oJS);
       }
-      
+
       function sendRequest(sType, sRoom, sMedia, sCommand, aParams){
         if(typeof aParams == "undefined") var aParams = [];
         oWS.send(JSON.stringify({"sType":sType,"sTarget":sRoom,"sMedia":sMedia,"sCommand":sCommand,"aParams":aParams}));
       }
-      
+
       function checkHash(){
         var aLocation = window.location.hash.substr(1).split("/");
         if(aLocation[0] == "")
-          changeGUI("room-menu", "", "");
+          changeGUI("gui/room-menu", "", "");
         else if(aLocation[1] == "")
-          changeGUI("media-menu", aLocation[0], "");
+          changeGUI("gui/media-menu", aLocation[0], "");
         else if(aLocation[0] != "" && aLocation[1] != "")
-          changeGUI("modules/" + aLocation[1], aLocation[0], aLocation[1]);
+          changeGUI("modules/" + aLocation[1] + "/gui/" + aLocation[1], aLocation[0], aLocation[1]);
         else
-          changeGUI("room-menu", "", "");
+          changeGUI("gui/room-menu", "", "");
       }
-      
+
       checkHash();
       window.onhashchange = function(){
         checkHash();
       };
-      
-      
+
+
     </script>
-    
+
   </body>
-  
+
 </html>

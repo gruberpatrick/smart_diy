@@ -1,6 +1,7 @@
 // libraries
 var oOS = require("os");
 var oNetwork = require("./lib/HandyJS/lib/network-p");
+var oPath = require("fs");
 // settings
 var oSetup = require("./set/setup.json");
 var oModules = {};
@@ -17,7 +18,11 @@ oNetwork.oSocket.connectWebSocket(oSetup.sServerHost, oSetup.lServerPort, functi
   console.log(oData);
   if(oData.sType == "init"){
     for(var lIndex in oData.oResponse.oData){
-      oModules[lIndex] = require(oData.oResponse.oData[lIndex].sPath);
+      if(!oPath.existsSync("./modules/" + oData.oResponse.oData[lIndex].sGUI + "/lib/" + oData.oResponse.oData[lIndex].sPath)){
+        console.log("[" + sHostname + "] Package not available: " + lIndex);
+        continue;
+      }
+      oModules[lIndex] = require("./modules/" + oData.oResponse.oData[lIndex].sGUI + "/lib/" + oData.oResponse.oData[lIndex].sPath);
       oModules[lIndex].init(oData.oResponse.oData[lIndex].aParams);
     }
   }else if(oData.sType == "control"){
@@ -39,4 +44,3 @@ oNetwork.oSocket.connectWebSocket(oSetup.sServerHost, oSetup.lServerPort, functi
   console.log("[" + sHostname + "] Error:");
   console.log(oErr);
 });
-

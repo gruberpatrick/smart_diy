@@ -1,0 +1,15 @@
+{
+  "sModuleObject": "oRhythmbox",
+  "oModuleObject": {
+    "sName": "Rhythmbox",
+    "sPath": "rhythmbox.js",
+    "aParams": ["/home/p"],
+    "sGUI": "rhythmbox"
+  },
+  "aRequirements": [
+    "rhythmbox"
+  ],
+  "aNodePackages": [
+    "sync-exec", "xml2js"
+  ]
+}
