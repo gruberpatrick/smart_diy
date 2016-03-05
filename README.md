@@ -6,8 +6,8 @@
 
 - This project aims to provide a simple platform to create smart home systems based on NodeJS and the WebSocket standard.
 - The server acts as host to facilitate communication between the clients and remotes. Clients and remotes do not communicate with each other directly, they have to go through the server.
-- Client nodes will enable modules (extend system over time) and add functionality to the system.
-- Remotes can easily be integrated, as long as they comply with the defined protocol. The standard remotes are started with the "gui.js" script. This will open an express application that will handle calls of http://YOURIP:8080/ or http://localhost:8080/.
+- Client nodes will enable modules and hence add remote functionality to the system.
+- Remotes can be integrated easily, as long as they comply with the defined protocol. The out-of-the-box remotes are started with the "gui.js" script. This will open an express application that will handle calls of http://YOURIP:8080/ or http://localhost:8080/.
 
 ## The protocol
 
