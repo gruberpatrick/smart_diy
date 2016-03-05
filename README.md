@@ -5,6 +5,7 @@
 **Project still in early development.** Basic implementations working but will be extended in future versions.
 
 This project aims to provide a simple platform to create smart home systems based on NodeJS and the WebSocket standard.
+Client nodes will enable modules (extend system over time) and add functionality to the system.
 Remotes can easily be integrated, as long as they comply with the defined protocol.
 
 ## The protocol
