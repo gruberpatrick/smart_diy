@@ -5,7 +5,7 @@
 **Project still in early development.** Basic implementations working but will be extended in future versions.
 
 - This project aims to provide a simple platform to create smart home systems based on NodeJS and the WebSocket standard.
-- The server acts as moderator between the clients and remotes. None of them directly access each other, they have to go through the server.
+- The server acts as host to facilitate communication between the clients and remotes. Clients and remotes do not communicate with each other directly, they have to go through the server.
 - Client nodes will enable modules (extend system over time) and add functionality to the system.
 - Remotes can easily be integrated, as long as they comply with the defined protocol. The standard remotes are started with the "gui.js" script. This will open an express application that will handle calls of http://YOURIP:8080/ or http://localhost:8080/.
 
@@ -54,6 +54,7 @@ The server returns a response if data needs to be returned. This may depend on t
 ## Future Implementations aka. TODO's
 
 - add password protection for shared system
+- ensure that communication was transmitted through server
 - add package manager for modules
 - prevent interference of multiple media players (when one starts playing suspend all others)
 - let server return answer containing logged in clients
