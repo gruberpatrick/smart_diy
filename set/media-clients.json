@@ -1,16 +1,4 @@
 {
-  "pittman-EB1036": {
-    "sName": "Pittman Server",
-    "aModules": [
-      "oRhythmbox"
-    ]
-  },
-  "pi":{
-    "sName": "Mobile / Development",
-    "aModules":[
-      "oRhythmbox","oYoutube","oGate"
-    ]
-  },
   "blackbird":{
     "sName": "Patrick's Laptop",
     "aModules": [
