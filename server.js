@@ -34,6 +34,14 @@ oNetwork.oSocket.initializeWebSocket(oSetup.lServerPort, function(oWS){
     oData["oResponse"] = {"oData": dataSwitch(oData, sKey)};
   }else if(oData.sType == "response"){
     sKey = oData.sTarget;
+  }else if(oData.sType == "status"){
+    var aRes = [];
+    if(oData.sCommand == "getClients"){
+      for(var lIndex in oMediaClients){
+        aRes.push(oMediaClients[lIndex]);
+      }
+    }
+    oData["oResponse"] = {"oData": aRes};
   }
   oNetwork.oSocket.clientSend(sKey, oData);
 }.bind(this), function(oErr){

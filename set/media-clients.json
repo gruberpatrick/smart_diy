@@ -2,7 +2,7 @@
   "blackbird":{
     "sName": "Patrick's Laptop",
     "aModules": [
-      "oRhythmbox"
+      "oRhythmbox", "oGstreamer"
     ]
   }
 }

@@ -57,7 +57,7 @@ The server returns a response if data needs to be returned. This may depend on t
 - ensure that communication was transmitted through server
 - add package manager for modules
 - prevent interference of multiple media players (when one starts playing suspend all others)
-- let server return answer containing logged in clients
+- let server return answer containing logged in clients <-- In the works right now. Documentation will follow soon.
 
 ## Screenshots
 

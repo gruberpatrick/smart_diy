@@ -8,7 +8,7 @@
   "oGate":{
     "sName": "Gate",
     "sPath": "gate.js",
-    "aParams": [["Chantal","Chris","Patrick"]],
+    "aParams": ["1234", ["Chantal","Chris","Patrick"], ["4321","2341","3412"]],
     "sGUI": "gate"
   },
   "oYoutube":{
@@ -16,5 +16,11 @@
     "sPath": "youtube.js",
     "aParams": [],
     "sGUI": "youtube"
+  },
+  "oGstreamer":{
+    "sName": "GStreamer",
+    "sPath": "gstreamer.js",
+    "aParams": [],
+    "sGUI": "gstreamer"
   }
 }
