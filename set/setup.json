@@ -1,5 +1,5 @@
 {
-  "sServerHost":"10.255.37.108",
+  "sServerHost":"192.168.1.8",
   "lServerPort": 4444,
   "sGUIDirectory": "/gui/"
 }

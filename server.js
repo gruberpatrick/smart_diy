@@ -24,6 +24,7 @@ oNetwork.oSocket.initializeWebSocket(oSetup.lServerPort, function(oWS){
     if(typeof oData.sName == "undefined" || typeof oMediaClients[oData.sName] == "undefined") return;
     oMediaClients[oData.sName]["bConnected"] = true;
     oMediaClients[oData.sName]["sKey"] = sKey;
+    oMediaClients[oData.sName]["sRemoteAddress"] = oClient.oClientWebSocket.upgradeReq.connection.remoteAddress;
     var aResponseTemp = {};
     for(var lIndex in oMediaClients[oData.sName]["aModules"]){
       aResponseTemp[oMediaClients[oData.sName]["aModules"][lIndex]] = oMediaModules[oMediaClients[oData.sName]["aModules"][lIndex]];
@@ -35,11 +36,13 @@ oNetwork.oSocket.initializeWebSocket(oSetup.lServerPort, function(oWS){
   }else if(oData.sType == "response"){
     sKey = oData.sTarget;
   }else if(oData.sType == "status"){
-    var aRes = [];
+    var aRes = {};
     if(oData.sCommand == "getClients"){
       for(var lIndex in oMediaClients){
-        aRes.push(oMediaClients[lIndex]);
+        aRes[lIndex] = oMediaClients[lIndex];
       }
+    }else if(oData.sCommand == "getModules" && typeof oMediaClients[oData.aParams[0]] != "undefined"){
+      aRes = oMediaClients[oData.aParams[0]];
     }
     oData["oResponse"] = {"oData": aRes};
   }

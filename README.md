@@ -21,6 +21,8 @@ A client node has to log in on the server, providing his own name:
 }
 ```
 
+**[CLIENT-NAME]** = Replace this with the name as defined in "set/media-clients.json"
+
 The server provides a list of the modules as client needs to load.
 A remote provides the needed data for the server. At the moment there is no authentication needed. This will change in future versions of the project.
 
@@ -31,7 +33,7 @@ A remote provides the needed data for the server. At the moment there is no auth
   ["sFrom": "...",]          // from added by server to deliver response
   "sMedia": "oRhythmbox",    // see "set/media-modules.json" for available modules
   "sCommand": "play"         // command depending on module -> modules define a detailed list of these commands
-  "aParams": [...]           // params required by command -> modules define a detailed list of these params
+  "aParams": {...}           // params required by command -> modules define a detailed list of these params
 }
 ```
 
@@ -44,12 +46,32 @@ The server returns a response if data needs to be returned. This may depend on t
   "sFrom": "...",            // target for command as defined in "set/media-clients.json" file
   "sMedia": "oRhythmbox",    // see "set/media-modules.json" for available modules
   "sCommand": "play"         // command depending on module -> modules define a detailed list of these commands
-  "aParams": [...]           // params required by command -> modules define a detailed list of these params
+  "aParams": {...}           // params required by command -> modules define a detailed list of these params
   "oResponse": {             // response values -> as defined by the module
-    "oData": [...]
+    "oData": {...}
   }
 }
 ```
+
+## Server Status Protocol
+
+There are a variety of commands that come with the status protocol. It is used to get data from the server.
+The structure is as follows:
+
+```
+{
+  "sType": "status",                   // define the type as status to get server data
+  ["sTarget": "...",]                  // dependent on the command
+  "sCommand": "[COMMAND-TYPE]",
+  "aParams": {...}
+}
+```
+
+**[COMMAND-TYPE]** = Replace this with the desired command.
+
+Valid commands are:
+- **getClients**: Returns the currently connected clients.
+- **getModules**: The Modules used for the specified client (sTarget).
 
 ## Future Implementations aka. TODO's
 

@@ -4,6 +4,7 @@ module.exports = {
 
   sStatus: "nothing",
   sServer: "",
+  aConnectedClients: [],
 
   init: function(aParams){
 
@@ -20,21 +21,34 @@ module.exports = {
       case "endStream":
         return this.endStream();
       case "getStatus":
-        return {"sStatus": this.sStatus, "sServer": this.sServer};
+        return {"sStatus": this.sStatus, "sServer": this.sServer, "aConnectedClients": this.aConnectedClients};
+      case "toggleClient":
+        return this.toggleClient(aParams[0]);
     };
   },
 
   startStream: function(){
     this.sStatus = "server";
+    // start server command
   },
 
-  connectStream: function(sServer){
+  connectStream: function(sRemoteAddress){
     this.sStatus = "client";
-    this.sServer = sServer;
+    this.sServer = sRemoteAddress;
+    // connect to streaming server
   },
 
   endStream: function(){
     this.sStatus = "nothing";
+    // kill server
+  },
+
+  toggleClient: function(sClient){
+    if(this.aConnectedClients.indexOf(sClient) >= 0)
+      delete this.aConnectedClients[this.aConnectedClients.indexOf(sClient)];
+    else {
+      this.aConnectedClients.push(sClient);
+    }
   }
 
 };
