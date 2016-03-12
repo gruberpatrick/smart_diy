@@ -3,7 +3,7 @@
     "sName": "Rhythmbox",
     "sPath": "rhythmbox.js",
     "aParams": ["/home/p"],
-    "sGUI": "rhythmbox"
+    "sGUI": "rhythmbox" 
   },
   "oGate":{
     "sName": "Gate",
