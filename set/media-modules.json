@@ -20,7 +20,7 @@
   "oGstreamer":{
     "sName": "GStreamer",
     "sPath": "gstreamer.js",
-    "aParams": [],
+    "aParams": ["224.1.1.1", 5555],
     "sGUI": "gstreamer"
   }
 }

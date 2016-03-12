@@ -4,5 +4,11 @@
     "aModules": [
       "oRhythmbox", "oGstreamer"
     ]
+  },
+  "whiskeyriver":{
+    "sName": "Patrick's Old One",
+    "aModules": [
+      "oGstreamer"
+    ]
   }
 }

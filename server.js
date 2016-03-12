@@ -16,7 +16,7 @@ oNetwork.oSocket.initializeWebSocket(oSetup.lServerPort, function(oWS){
 }.bind(this), function(sKey, oClient){
   // operation
   var oData = JSON.parse(oClient.sLastMessage);
-  if(typeof oData.sType == "undefined") return;
+  if(typeof oData.sType == "undefined" || oData.sConnectionHash != oSetup.sConnectionHash) return;
   var oResponse = {};
   console.log("[SYSTEM] Traffic:");
   console.log(oData);
@@ -31,6 +31,7 @@ oNetwork.oSocket.initializeWebSocket(oSetup.lServerPort, function(oWS){
     }
     oData["oResponse"] = {"oData": aResponseTemp};
     oData["sTarget"] = oData["sName"];
+    oData["sRemoteAddress"] = oMediaClients[oData.sName]["sRemoteAddress"];
   }else if(oData.sType == "control"){
     oData["oResponse"] = {"oData": dataSwitch(oData, sKey)};
   }else if(oData.sType == "response"){

@@ -1,2 +1,4 @@
 /node_modules/*
-/set/*
+/set/setup.json
+/set/media-clients.json
+/set/media-modules.json

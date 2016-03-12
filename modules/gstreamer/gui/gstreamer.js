@@ -11,7 +11,10 @@ function Module(){
         document.getElementById("start_stream_server").innerHTML = "Stream ON";
         sendRequest("status", oData.sRoom, oData.sModuleName, "getClients", []);
       }else if(oResponse.oResponse.oData.sStatus == "client"){
-
+        document.getElementById("status").innerHTML = "Streaming from somewhere else.";
+        document.getElementById("result_box").className = "hidden";
+        document.getElementById("start_stream_server").className = "button active";
+        document.getElementById("start_stream_server").innerHTML = "Stream ON";
       }else if(oResponse.oResponse.oData.sStatus == "nothing"){
         document.getElementById("status").innerHTML = "No stream.";
         document.getElementById("result_box").className = "hidden";
@@ -20,9 +23,15 @@ function Module(){
       }
     }else if(oResponse.sCommand == "getClients" && oResponse.oResponse.oData != {}){
       document.getElementById("result_box").innerHTML = "";
+      var sRemoteAddress = "224.1.1.1";
       for(var lIndex in oResponse.oResponse.oData){
-        if(oResponse.oResponse.oData[lIndex].aModules.indexOf("oGstreamer") >= 0)
-          document.getElementById("result_box").innerHTML += "<div class=\"element\" id=\"toggle-" + lIndex + "\" onclick=\"oModule.connectStream('" + lIndex + "', '" + oResponse.oResponse.oData[lIndex].sRemoteAddress + "');\">" + oResponse.oResponse.oData[lIndex].sName + "</div>";
+        if(lIndex == oData.sRoom)
+          sRemoteAddress = oResponse.oResponse.oData[lIndex].sRemoteAddress;
+      }
+      for(var lIndex in oResponse.oResponse.oData){
+        if(oResponse.oResponse.oData[lIndex].aModules.indexOf("oGstreamer") < 0)
+          continue;
+        document.getElementById("result_box").innerHTML += "<div class=\"element\" id=\"toggle-" + lIndex + "\" onclick=\"oModule.connectStream('" + lIndex + "', '" + sRemoteAddress + "');\">" + oResponse.oResponse.oData[lIndex].sName + "</div>";
       }
     }
   };

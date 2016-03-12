@@ -84,7 +84,7 @@
 
       function sendRequest(sType, sRoom, sMedia, sCommand, aParams){
         if(typeof aParams == "undefined") var aParams = [];
-        oWS.send(JSON.stringify({"sType":sType,"sTarget":sRoom,"sMedia":sMedia,"sCommand":sCommand,"aParams":aParams}));
+        oWS.send(JSON.stringify({"sType":sType,"sConnectionHash":oData.oSetup.sConnectionHash,"sTarget":sRoom,"sMedia":sMedia,"sCommand":sCommand,"aParams":aParams}));
       }
 
       function checkHash(){

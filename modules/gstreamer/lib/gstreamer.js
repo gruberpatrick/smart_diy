@@ -1,22 +1,28 @@
 var oExec = require("sync-exec");
+var oOS = require("os");
 
 module.exports = {
 
   sStatus: "nothing",
   sServer: "",
   aConnectedClients: [],
+  lRTPPort: 5555,
+  sMulticastIP: "224.1.1.1",
+  sRemoteAddress: "",
 
   init: function(aParams){
-
+    this.sMulticastIP = aParams[0];
+    this.lRTPPort = aParams[1];
+    this.getRemoteAddress();
   },
 
   evaluateCommand: function(sCommand, aParams){
     switch(sCommand){
       case "startStream":
-        this.endStream();
-        return this.startStream();
+        //this.endStream();
+        return this.startStream(aParams[0]);
       case "connectStream":
-        this.endStream();
+        //this.endStream();
         return this.connectStream(aParams[0]);
       case "endStream":
         return this.endStream();
@@ -29,18 +35,18 @@ module.exports = {
 
   startStream: function(){
     this.sStatus = "server";
-    // start server command
+    oExec("gst-launch-1.0 pulsesrc ! audioconvert ! audioresample ! mulawenc ! rtppcmupay ! udpsink host=" + this.sRemoteAddress + " auto-multicast=true port=" + this.lRTPPort + " &");
   },
 
   connectStream: function(sRemoteAddress){
     this.sStatus = "client";
     this.sServer = sRemoteAddress;
-    // connect to streaming server
+    oExec("vlc rtp://" + sRemoteAddress + ":" + this.lRTPPort);
   },
 
   endStream: function(){
     this.sStatus = "nothing";
-    // kill server
+    oExec("killall gst-launch-1.0");
   },
 
   toggleClient: function(sClient){
@@ -49,6 +55,10 @@ module.exports = {
     else {
       this.aConnectedClients.push(sClient);
     }
+  },
+
+  getRemoteAddress: function(){
+    this.sRemoteAddress = global.sRemoteAddress;
   }
 
 };

@@ -7,16 +7,19 @@ var oSetup = require("./set/setup.json");
 var oModules = {};
 var sHostname = oOS.hostname();
 
+global.sRemoteAddress = "127.0.0.1";
+
 oNetwork.oSocket.connectWebSocket(oSetup.sServerHost, oSetup.lServerPort, function(){
   console.log("[" + sHostname + "] Connection established.");
   // set identification to server
-  oNetwork.oSocket.serverSend({sType:"init",sName:sHostname});
+  oNetwork.oSocket.serverSend({sType:"init",sName:sHostname,sConnectionHash:oSetup.sConnectionHash});
 }, function(oLastConnection, lFlags){
   var oData = JSON.parse(oLastConnection.sLastMessage);
   if(typeof oData.sType == "undefined" || typeof oData.sTarget == "undefined" || oData.sTarget != sHostname) return;
   console.log("[" + sHostname + "] Traffic:");
   console.log(oData);
   if(oData.sType == "init"){
+    global.sRemoteAddress = oData.sRemoteAddress;
     for(var lIndex in oData.oResponse.oData){
       if(!oPath.existsSync("./modules/" + oData.oResponse.oData[lIndex].sGUI + "/lib/" + oData.oResponse.oData[lIndex].sPath)){
         console.log("[" + sHostname + "] Package not available: " + lIndex);

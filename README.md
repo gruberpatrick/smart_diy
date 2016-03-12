@@ -17,7 +17,8 @@ A client node has to log in on the server, providing his own name:
 ```
 {
   "sType": "init",
-  "sName": "[CLIENT-NAME]" // the client name as defined in the "set/media-clients.json" file
+  "sName": "[CLIENT-NAME]",  // the client name as defined in the "set/media-clients.json" file
+  "sConnectionHash": "..."   // connection hash as defined in set/setup.json
 }
 ```
 
@@ -29,6 +30,7 @@ A remote provides the needed data for the server. At the moment there is no auth
 ```
 {
   "sType": "control",
+  "sConnectionHash": "...",  // connection hash as defined in set/setup.json
   "sTarget": "...",          // target for command as defined in "set/media-clients.json" file
   ["sFrom": "...",]          // from added by server to deliver response
   "sMedia": "oRhythmbox",    // see "set/media-modules.json" for available modules
@@ -42,6 +44,7 @@ The server returns a response if data needs to be returned. This may depend on t
 ```
 {
   "sType": "response",
+  "sConnectionHash": "...",  // connection hash as defined in set/setup.json
   "sTarget": "...",          // target for response -> this is now the remote
   "sFrom": "...",            // target for command as defined in "set/media-clients.json" file
   "sMedia": "oRhythmbox",    // see "set/media-modules.json" for available modules
@@ -61,6 +64,7 @@ The structure is as follows:
 ```
 {
   "sType": "status",                   // define the type as status to get server data
+  "sConnectionHash": "...",            // connection hash as defined in set/setup.json
   ["sTarget": "...",]                  // dependent on the command
   "sCommand": "[COMMAND-TYPE]",
   "aParams": {...}
@@ -75,11 +79,14 @@ Valid commands are:
 
 ## Future Implementations aka. TODO's
 
-- add password protection for shared system
-- ensure that communication was transmitted through server
-- add package manager for modules
-- prevent interference of multiple media players (when one starts playing suspend all others)
-- let server return answer containing logged in clients <-- In the works right now. Documentation will follow soon.
+- Transfer WS to WSS
+- Ensure that communication was transmitted through server
+- Add package manager for modules
+- Prevent interference of multiple media players (when one starts playing suspend all others)
+
+## Fixes:
+
+- YouTube module seems to be broken
 
 ## Screenshots
 

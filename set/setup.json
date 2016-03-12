@@ -1,5 +1,6 @@
 {
   "sServerHost":"192.168.1.8",
   "lServerPort": 4444,
-  "sGUIDirectory": "/gui/"
+  "sGUIDirectory": "/gui/",
+  "sConnectionHash": "44connection44"
 }
