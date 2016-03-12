@@ -4,6 +4,7 @@ var oNetwork = require("./lib/HandyJS/lib/network-p");
 var oPath = require("fs");
 // settings
 var oSetup = require("./set/setup.json");
+var oMediaModules = require("./set/media-modules.json");
 var oModules = {};
 var sHostname = oOS.hostname();
 
@@ -26,7 +27,7 @@ oNetwork.oSocket.connectWebSocket(oSetup.sServerHost, oSetup.lServerPort, functi
         continue;
       }
       oModules[lIndex] = require("./modules/" + oData.oResponse.oData[lIndex].sGUI + "/lib/" + oData.oResponse.oData[lIndex].sPath);
-      oModules[lIndex].init(oData.oResponse.oData[lIndex].aParams);
+      oModules[lIndex].init(oMediaModules[lIndex].aParams);
     }
   }else if(oData.sType == "control"){
     if(typeof oModules[oData.sMedia] == "undefined") return;

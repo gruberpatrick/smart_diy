@@ -5,10 +5,10 @@
       "oRhythmbox", "oGstreamer"
     ]
   },
-  "whiskeyriver":{
+  "pittman-EB1036":{
     "sName": "Patrick's Old One",
     "aModules": [
-      "oGstreamer"
+      "oRhythmbox", "oGstreamer"
     ]
   }
 }
