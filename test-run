@@ -1,7 +1,0 @@
-echo "Starting server..."
-nodejs server.js &
-
-sleep 1
-
-echo "Starting local client..."
-nodejs client.js &
