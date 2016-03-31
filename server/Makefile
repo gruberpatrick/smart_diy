@@ -10,6 +10,10 @@ LDLIBS     =
 
 #make executable
 all:
+	@ clear
+	@ echo "#######################################################################"
+	@ echo " Building SmartDIY Server"
+	@ echo "-----------------------------------------------------------------------"
 	$(CXX) main.cpp $(CXXFLAGS) -o $(EXECUTABLE)
 
 #make clean

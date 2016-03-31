@@ -1,4 +1,4 @@
-[
-  {"sGroupId":"living-room","sName":"Living Room","aClients":[]},
-  {"sGroupId":"pool-house","sName":"Pool House","aClients":[]}
-]
+{
+  "living-room":{ "sName":"Living Room", "aClients":[] },
+  "pool-house": { "sName":"Pool House", "aClients":[] }
+}

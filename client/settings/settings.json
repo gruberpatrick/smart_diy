@@ -1,0 +1,11 @@
+{
+  "sHostAddress":"127.0.0.1",
+  "lPort":4444,
+  "sConnectionHash":"############",
+  "sGroupId":"living-room",
+  "sClientId":"client1",
+  "sClientName": "Patrick's Laptop",
+  "aModules":[
+    {"sModuleId":"rhythmbox", "sModuleName":"Rhythmbox"}
+  ]
+}

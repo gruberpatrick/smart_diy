@@ -35,7 +35,7 @@
           <li><a href="#a_security">Security</a></li>
           <li><a href="#a_initialization_sequence">Initialization Sequence</a></li>
           <li><a href="#a_server_status">Server Status</a></li>
-          <li><a href="#a_module_communication">Module Communication</a></li>
+          <li><a href="#a_module_communication">Client Communication</a></li>
         </ol>
       </li>
       <li><a href="#a_server">Server</a>
@@ -96,7 +96,31 @@
       prevents unauthorized access. The standard hash is defined to be
       "############", which should be changed during the setup.
     </p>
-    <h3  id="a_initialization_sequence">Initialization Sequence</h3>
+    <h3 id="a_error">Error Messages</h3>
+    <p>
+      Error messages can be sent at any given time. This can be due to a mistake
+      in the initialization or a wrong connection hash.
+    </p>
+    <p>
+      The contents of the faulty message remain the same, the response contains
+      a message explaining the error. The senter of the message is also
+      identified here.
+    </p>
+    <pre><code>// -------------------------------------------------------------
+// <strong>oResponse</strong>: Object containing the error message
+// ------------------------------------------------------------------
+
+{
+  "sType": "error",
+  "sConnectionHash": "...",
+  [CONTENTS OF THE RECEIVED MESSAGE]
+  "oResponse":{
+    "sMessage": "[MESSAGE]",
+    "sSender": "[client || server || remote]"
+  }
+}
+    </code></pre>
+    <h3 id="a_initialization_sequence">Initialization Sequence</h3>
     <p>
     To add a client to the system, the client needs to report "for duty". By
     sending the server the <strong>sType</strong> variable with the "init" value, the
@@ -123,7 +147,7 @@
   "aModules":[
     {
       "sModuleId": "...",
-      "sModuleNamd": "..."
+      "sModuleName": "..."
     },
     {...}
   ]
@@ -131,9 +155,7 @@
     </code></pre>
     <p>
       If successful, the server now sends a "init-response" with the value
-      "init". Otherwise, the response will contain "error" (this may be due to
-      an invalid "sConnectionHash" or a non-existent "sGroupId"). For security
-      reasons, no specific error will be reported.
+      "init".
     </p>
     <pre><code>// -------------------------------------------------------------
 // <strong>sGroupId</strong>: Multiple client nodes can be added to a group
@@ -157,7 +179,7 @@
   "aModules":[
     {
       "sModuleId": "...",
-      "sModuleNamd": "..."
+      "sModuleName": "..."
     },
     {...}
   ],
@@ -208,7 +230,7 @@
   "oResponse": {...}
 }</code></pre>
 
-    <h3 id="a_module_communication">Module Communication</h3>
+    <h3 id="a_module_communication">Client Communication</h3>
     <p>
       This is the most important part of the system. Remotes need to tell the
       clients what they have to do. To send a successful <strong>sType</strong> command
