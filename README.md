@@ -1,4 +1,4 @@
-# SMART DIY
+# Smart DIY - Home Automation System
 
 ## Description
 

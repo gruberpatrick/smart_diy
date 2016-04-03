@@ -5,7 +5,7 @@
   "sGroupId":"living-room",
   "sClientId":"client1",
   "sClientName": "Patrick's Laptop",
-  "aModules":[
-    {"sModuleId":"rhythmbox", "sModuleName":"Rhythmbox"}
-  ]
+  "oModules":{
+    "rhythmbox": {"sModuleName": "Rhythmbox"}
+  }
 }

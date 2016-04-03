@@ -15,6 +15,7 @@ all:
 	@ echo " Building SmartDIY Server"
 	@ echo "-----------------------------------------------------------------------"
 	$(CXX) main.cpp $(CXXFLAGS) -o $(EXECUTABLE)
+	@ echo "DONE!"
 
 #make clean
 clean:

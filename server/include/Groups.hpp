@@ -27,19 +27,16 @@ class Groups{
     };
 
     void addClient(std::string group_id, JSON client){
-      groups[group_id]["aClients"].push_back(client); // push client to group
+      std::string client_id = client["sClientId"];
+      client.erase("sClientId");
+      groups[group_id]["oClients"][client_id] = client; // push client to group
       std::cout << "Client added: " << groups.dump() << std::endl;
     };
 
     void removeClient(std::string group_id, std::string client_id){
-      if(!groupExists(group_id)) // check if parameters are valid
+      if(clientIdExistsInGroup(group_id, client_id) != 1) // check if parameters are valid
         return;
-      for(unsigned int it = 0; it < groups[group_id]["aClients"].size(); it++){
-        if(groups[group_id]["aClients"][it]["sClientId"] == client_id){ // found client
-          groups[group_id]["aClients"].erase(it); // now delete
-          break;
-        }
-      }
+      groups[group_id]["oClients"].erase(client_id);
       std::cout << "Client removed: " << groups.dump() << std::endl;
     };
 
@@ -51,13 +48,15 @@ class Groups{
 
     int clientIdExistsInGroup(std::string group_id, std::string client_id){
       if(!groupExists(group_id)) // check if parameters are valid
-        return -1;
-      for(JSON::iterator it = groups[group_id]["aClients"].begin(); it != groups[group_id]["aClients"].end(); it++){
-        if(it.value()["sClientId"] == client_id)
-          return 1; // client with id already in given group
-      }
+        return -1; // group doesn't exist
+      if(groups[group_id]["oClients"].find(client_id) != groups[group_id]["oClients"].end())
+        return 1;//  client found
       return 0; // client not found
     }
+
+    JSON getGroups(){
+      return groups;
+    };
 
   private:
 
