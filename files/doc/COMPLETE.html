@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Smart DIY - FULL GUIDE</title>
+    <style type="text/css">
+      body{padding:0;margin:0.5in;font-family:"Times New Roman",Serif;
+        text-align:justify;}
+      @page{margin:.5in .5in .5in .5in;}
+      header{margin-bottom:1in;}
+      #index{page-break-after: always;display:block;margin:0 auto;}
+      h1{margin:0;margin-top:1in;}
+      h2{border-top:4px solid #000;padding-top:10px;padding-left:10px;}
+      h3{margin-left:30px;}
+      p{margin-left:30px;margin-right:10px;}
+      pre{border:1px solid #000;display:block;padding:10px;background:#f1f1f1;
+        overflow:auto;}
+    </style>
+  </head>
+  <body>
+
+    <header>
+      <h1>Smart DIY - Home Automation System</h1>
+      <p style="text-align:center;margin-bottom:40px;"><strong>
+        2016 &copy; Patrick Gruber<br />
+        Last review: 03/28/2016<br />
+        Contact: patrick@gruber.fyi
+      </strong></p>
+    </header>
+
+    <ol id="index">
+      <li><a href="#a_introduction">Introduction</a></li>
+      <li><a href="#a_basic_structure">Basic structure</a></li>
+      <li><a href="#a_protocol">Protocol</a>
+        <ol>
+          <li><a href="#a_security">Security</a></li>
+          <li><a href="#a_initialization_sequence">Initialization Sequence</a></li>
+          <li><a href="#a_server_status">Server Status</a></li>
+          <li><a href="#a_module_communication">Client Communication</a></li>
+        </ol>
+      </li>
+      <li><a href="#a_server">Server</a>
+        <ol>
+          <li><a href="#a_server_commands">Server Commands</a>
+        </ol>
+      </li>
+      <li><a href="#a_clients">Clients</a>
+        <ol>
+          <li><a href="#a_modules">Modules</a></li>
+          <li><a href="#a_development">Development</a<</li>
+        </ol>
+      </li>
+      <li><a href="#a_remotes">Remotes</a></li>
+      <li><a href="#a_todo">TODO</a></li>
+    </ol>
+
+    <h2 id="a_introduction">Introduction</h2>
+    <p>
+      Smart DIY aims to be a cheap and easy to use home automation system,
+      written with a combination of C++ and NodeJS. The usage of the WebSocket
+      standard makes the system easy to hack and open to anyone with basic
+      JavaScript knowledge.
+    <p>
+
+    <!-- ################################################################### -->
+    <h2 id="a_basic_structure">Basic Structure</h2>
+    <p>
+      The core system includes a server application. All system internal
+      communication is going through this node. This ensures that the server is
+      always provided with the most accurate data and can be probed for
+      information. More about this can be read in the
+      <a href="#a_protocol">"Protocol"</a> section.
+    </p>
+    <p>
+      The second part of the system consists of client nodes. At any given time,
+      a client can connect to the server (given the network address, port and
+      security settings). A connected client will load modules which provide the
+      functionality for the workflow of the entire system.
+    </p>
+    <p>
+      Lastly, remote systems control the clients. By knowing their ID, remotes
+      send commands to the server, which then distributes them to the clients.
+      Commands are defined by modules.
+    </p>
+
+    <!-- ################################################################### -->
+    <h2 id="a_protocol">Protocol</h2>
+    <p>
+      Communication is settled as a JSON protocol, sent with the WebSocket
+      standard.
+    </p>
+    <h3  id="a_security">Security</h3>
+    <p>
+      The whole protocol can be secured by a beforehand determined hash. This
+      requires adding the "sConnectionHash" variable to every step of
+      communication. This is used to provide an easy layer of security and
+      prevents unauthorized access. The standard hash is defined to be
+      "############", which should be changed during the setup.
+    </p>
+    <h3 id="a_error">Error Messages</h3>
+    <p>
+      Error messages can be sent at any given time. This can be due to a mistake
+      in the initialization or a wrong connection hash.
+    </p>
+    <p>
+      The contents of the faulty message remain the same, the response contains
+      a message explaining the error. The senter of the message is also
+      identified here.
+    </p>
+    <pre><code>// -------------------------------------------------------------
+// <strong>oResponse</strong>: Object containing the error message
+// ------------------------------------------------------------------
+
+{
+  "sType": "error",
+  "sConnectionHash": "...",
+  [CONTENTS OF THE RECEIVED MESSAGE]
+  "oResponse":{
+    "sMessage": "[MESSAGE]",
+    "sSender": "[client || server || remote]",
+    "lErrorCode": [ERROR-CODE],
+    "sSentType": "[OLD-MESSAGE-TYPE]"
+  }
+}
+    </code></pre>
+    <h3 id="a_initialization_sequence">Initialization Sequence</h3>
+    <p>
+    To add a client to the system, the client needs to report "for duty". By
+    sending the server the <strong>sType</strong> variable with the "init" value, the
+    server now adds the client to its list of available nodes.
+    </p>
+    <pre><code>// -------------------------------------------------------------
+// <strong>sGroupId</strong>: Multiple client nodes can be added to a group
+//     (Ex. GROUP: Living Room, CLIENT: Media Center).
+// <strong>sClientId</strong>: A system-wide unique identifier, used by the remotes
+//     for command communication.
+// <strong>sClientName</strong>: The human readable name for the client, used to
+//     simplify the remote system.
+// <strong>aModules</strong>: Used to tell the server about the available
+//     modules, installed on the client. More about this in the
+//     <a href="#a_modules">"Modules"</a> section.
+// ------------------------------------------------------------------
+
+{
+  "sType": "init",
+  "sConnectionHash": "...",
+  "sGroupId": "[GROUP-ID]",
+  "sClientId": "[CLIENT-ID]",
+  "sClientName": "[CLIENT-NAME]",
+  "oModules":{
+    "[MODULE-ID]": {
+      "sModuleName": "..."
+    },
+    "[MODULE-ID]": {...}
+  }
+}
+    </code></pre>
+    <p>
+      Remotes have to initialize theimselves too. Their "sGroupId" is simply the
+      value "remote". The group ID "remote" is therefore protected. "sClientId"
+      and "sClientName" both need to given too in order for the initialization
+      to be successful. "oModules" can be an empty object in this case.<br />
+      More protected group ID's might be added in future versions of the software.
+    </p>
+    <p>
+      If successful, the server now sends a "init-response" with the value
+      "init".
+    </p>
+    <pre><code>// -------------------------------------------------------------
+// <strong>sGroupId</strong>: Multiple client nodes can be added to a group
+//     (Ex. GROUP: Living Room, CLIENT: Media Center).
+// <strong>sClientId</strong>: A system-wide unique identifier, used by the remotes
+//     for command communication.
+// <strong>sClientName</strong>: The human readable name for the client, used to
+//     simplify the remote system.
+// <strong>aModules</strong>: Used to tell the server about the available
+//     modules, installed on the client. More about this in the
+//     <a href="#a_modules">"Modules"</a> section.
+// <strong>oResponse</strong>: Response from the server.
+// ------------------------------------------------------------------
+
+{
+  "sType": "init-response",
+  "sConnectionHash": "...",
+  "sGroupId": "[GROUP-ID]",
+  "sClientId": "[CLIENT-ID]",
+  "sClientName": "[CLIENT-NAME]",
+  "oModules":{
+    "[MODULE-ID]": {
+      "sModuleName": "..."
+    },
+    "[MODULE-ID]": {...}
+  },
+  "oResponse": "init"
+}
+    </code></pre>
+    <p>
+      The client can now begin to load its modules.
+    </p>
+    <h3 id="a_server_status">Server Status</h3>
+    <p>
+      Sometimes, clients or remotes need to request general information from the
+      server. This is where the <strong>sType</strong> "status" request comes into play.
+    </p>
+    <pre><code>// -------------------------------------------------------------
+// <strong>sCommand</strong>: The type of status request. More information in the
+//     <a href="#a_server_commands">"Server Commands"</a> section.
+// <strong>aParams</strong>: Some commands (now or in the future) require parameters
+//     that need to be passed along. This is just an array containing
+//     values.
+// ------------------------------------------------------------------
+
+{
+  "sType": "status",
+  "sConnectionHash": "...",
+  "sCommand": "[COMMAND-TYPE]",
+  "aParams": [...]
+}</code></pre>
+    <p>
+      The server now responds with a "status-response" message and adds the
+      <strong>oResponse</strong> variable. Content of this variable depends on the
+      command.
+    </p>
+    <pre><code>// -------------------------------------------------------------
+// <strong>sCommand</strong>: The type of status request. More information in the
+//     <a href="#a_server_commands">"Server Commands"</a> section.
+// <strong>aParams</strong>: Some commands (now or in the future) require parameters
+//     that need to be passed along. This is just an array containing
+//     values.
+// <strong>oResponse</strong>: Response from the server.
+// ------------------------------------------------------------------
+
+{
+  "sType": "status-response",
+  "sConnectionHash": "...",
+  "sCommand": "[COMMAND-TYPE]",
+  "aParams": [...],
+  "oResponse": {...}
+}</code></pre>
+
+    <h3 id="a_module_communication">Client Communication</h3>
+    <p>
+      This is the most important part of the system. Remotes need to tell the
+      clients what they have to do. To send a successful <strong>sType</strong> command
+      message, the remote needs to know the CLIENT-ID, GROUP-ID and MODULE-ID
+      (this data can be aquired with status messages).
+    </p>
+    <pre><code>// -------------------------------------------------------------
+// <strong>sClientId</strong>: Identification for the client to send the command to.
+// <strong>sGroupId</strong>: Identification for the group, the client is part of.
+// <strong>sModuleId</strong>: Module identification the command is intended for.
+// <strong>sCommand</strong>: Command to send to the module.
+// <strong>aParams</strong>: Some commands (now or in the future) require parameters
+//     that need to be passed along. This is just an array containing
+//     values.
+// ------------------------------------------------------------------
+
+{
+  "sType": "command",
+  "sConnectionHash": "...",
+  "sClientId": "[CLIENT-ID]",
+  "sGroupId": "[GROUP-ID]",
+  "sModuleId": "[MODULE-ID]",
+  "sCommand": "[COMMAND-TYPE]",
+  "aParams": [...]
+}
+    </code></pre>
+    <p>
+      Depending on the command, the client now answers with a "command-response"
+      message (this is optional, as some commands don't need to answer).
+    </p>
+    <pre><code>// ------------------------------------------------------------------
+// <strong>sClientId</strong>: Identification for the client to send the command to.
+// <strong>sGroupId</strong>: Identification for the group, the client is part of.
+// <strong>sModuleId</strong>: Module identification the command is intended for.
+// <strong>sCommand</strong>: Command to send to the module.
+// <strong>oReturn</strong>: This variable is ADDED BY THE SERVER to facilitate the
+       answer and determine the recipient.
+// <strong>aParams</strong>: Some commands (now or in the future) require parameters
+//     that need to be passed along. This is just an array containing
+//     values.
+// <strong>oResponse</strong>:This variable contains the response value, depending
+//     on the command, sent to the client.
+// ------------------------------------------------------------------
+
+{
+  "sType": "command-response",
+  "sConnectionHash": "...",
+  "sClientId": "[CLIENT-ID]",
+  "sGroupId": "[GROUP-ID]",
+  "sModuleId": "[MODULE-ID]",
+  "sCommand": "[COMMAND-TYPE]",
+  "oReturn": {
+    "sGroupId": "[GROUP-ID]",
+    "sClientId": "[CLIENT-ID]"
+  },
+  "aParams": [...],
+  "oResponse": {...}
+}
+    </code></pre>
+
+    <!-- ################################################################### -->
+    <h2 id="a_server">Server</h2>
+    <p>
+      The core server application is written in C++, with the help of a couple
+      of free open source libraries. It uses a JSON library
+      (https://github.com/nlohmann/json), to be compatible with the JSON
+      protocol used for the system. The websocket library in use is websocketpp
+      (available here: https://github.com/zaphoyd/websocketpp). Furthermore, the
+      "handy-lib" library is used to simplify file operations
+      (https://github.com/gruberpatrick/handy-lib).
+    </p>
+
+    <h3 id="a_server_commands">Server Commands</h3>
+    <p>
+      As mentioned in the protocol section, the server itself can be probed for
+      client information. A "status" request needs to be sent.<br />
+      The following commands are currenly supported (<b>format</b> <i>"sCommand":
+      aParams &rarr; oResponse</i>):
+    </p>
+    <ul>
+      <li><strong>"get-groups"</strong>: [] &rarr; Array registered goups with
+      containing clients.</li>
+      <li><strong>"get-clients"</strong>: [GROUP-ID] &rarr; Array containing group
+      clients.</li>
+      <li><strong>"get-modules"</strong>: [GROUP-ID, CLIENT-ID] &rarr; Array
+      containing currently installed modules.</li>
+    </ul>
+
+    <!-- ################################################################### -->
+    <h2 id="a_clients">Clients</h2>
+
+    <p>
+      Clients require ID's that identify them throughout the network. These are
+      set during the client setup. Client ID's are required to be unique, per
+      group. Two identical client ID's may be part of the same network, but they
+      need to be part of different groups.
+    </p>
+
+    <h3 id="a_modules">Modules</h3>
+    <p>
+      Modules can be used by the core client software to facilitate
+      communication between remotes and clients, as well as providing the system
+      with the actual functionality.
+    </p>
+
+    <h3 id="a_development">Development</h3>
+    <p>
+      Modules need to provide a "install.json" file, which contains basic
+      information about the module, as well as the available commands. The core
+      client application will then automatically return an answer to a "help"
+      command.
+    </p>
+
+    <!-- ################################################################### -->
+    <h2 id="a_remotes">Remotes</h2>
+    <p>
+      More information coming soon!
+    </p>
+
+    <!-- ################################################################### -->
+    <h2 id="a_todo">TODO</h2>
+    <ul>
+      <li>Re-implement server application.</li>
+      <li>Re-implement client application.</li>
+      <li>Implement stand-alone remote application for Android.</li>
+    </ul>
+
+  </body>
+</hmtl>
