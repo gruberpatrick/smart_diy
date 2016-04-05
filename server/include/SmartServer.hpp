@@ -67,8 +67,7 @@ class SmartServer{
       else if(protocol["sType"] == "command")
         return evaluateCommand(client, protocol);
       else if(protocol["sType"] == "error")
-        return; // TODO: Check if error is ment for another node (sTo); Server is not messing with errors;
-
+        return evaluateErrorMessage(client, protocol);
       // invalid message found, reply with error
       return returnErrorMessage(client, protocol, "Command currently not supported. Check documentation.", 3);
     };
@@ -104,6 +103,10 @@ class SmartServer{
         return returnErrorMessage(client, protocol, "Module format incorrect. Check documentation.", 0);
       else if(groups->clientIdExistsInGroup(protocol["sGroupId"], protocol["sClientId"]) != 0)
         return returnErrorMessage(client, protocol, "Client with this ID already registered.", 0);
+      else if(!validIdFormat(protocol["sGroupId"])) // check if ID valid
+        return returnErrorMessage(client, protocol, "Group ID contains invalid characters.", 0);
+      else if(!validIdFormat(protocol["sClientId"])) // check if ID valid
+        return returnErrorMessage(client, protocol, "Client ID contains invalid characters.", 0);
       // add client
       std::string client_id = protocol["sClientId"];
       std::string group_id = protocol["sGroupId"];
@@ -126,26 +129,57 @@ class SmartServer{
       // change the message type
       protocol["sType"] = "status-reponse";
       JSON groups_object = groups->getGroups();
+      // convert necessary data
+      std::string group_id = "";
+      std::string client_id = "";
+      if(protocol["aParams"].size() == 1)
+        group_id = protocol["aParams"][0];
+      else if(protocol["aParams"].size() == 2){
+        group_id = protocol["aParams"][0];
+        client_id = protocol["aParams"][1];
+      }
       // set the appropriate response
       if(protocol["sCommand"] == "get-groups" && protocol["aParams"].size() == 0)
         protocol["oResponse"] = groups_object;
-      else if(protocol["sCommand"] == "get-clients" && protocol["aParams"].size() == 1 &&
-          groups_object.find(protocol["aParams"][0]) != groups_object.end())
-        // TODO:
-        //protocol["oResponse"] = groups_object[protocol["aParams"][0]];
-        std::cout << "GROUP-ID: " << protocol["aParams"][0] << std::endl;
-      /*else if(protocol["sCommand"] == "get-modules" && protocol["aParams"].size() == 2 &&
-          groups_object.find(protocol["aParams"][0]) != groups_object.end() &&
-          groups_object[protocol["aParams"][0]]["oClients"].find(protocol["aParams"][1]) !=  groups_object[protocol["aParams"][0]]["oClients"].end())
-        protocol["oResponse"] = groups_object[protocol["aParams"][0]]["oClients"][protocol["aParams"][1]]["oModules"];*/
+      else if(protocol["sCommand"] == "get-clients" && groups_object.find(group_id) != groups_object.end()){
+        protocol["oResponse"] = groups_object[group_id];
+      }else if(protocol["sCommand"] == "get-modules" && groups_object.find(group_id) != groups_object.end() &&
+          groups_object[group_id]["oClients"].find(client_id) !=  groups_object[group_id]["oClients"].end()){
+        protocol["oResponse"] = groups_object[group_id]["oClients"][client_id]["oModules"];
+      }
       // send response
       sendMessage(client, protocol);
     };
 
-
-    void evaluateCommand(websocketpp::connection_hdl client, JSON protocol){
-      // TODO
+    void evaluateErrorMessage(websocketpp::connection_hdl client, JSON protocol){
+      if(protocol.find("oReturn") == protocol.end()) // error message is ment for server -> doesn't care
+        return;
+      // TODO: Send error message to client or remote;
     };
+
+    // =========================================================================
+    // Evaluate the received command for correctness and send to client.
+    // -------------------------------------------------------------------------
+    // @param conneciton_hdl client : WebSocket client object.
+    // @param JSON protocol         : The JSON object of the received message.
+    //
+    void evaluateCommand(websocketpp::connection_hdl client, JSON protocol){
+      // TODO: Add oReturn variable; Send to client;
+    };
+
+    // =========================================================================
+    // Check if string contains correct characters (A-Z,a-z,0-9,-)
+    // -------------------------------------------------------------------------
+    // @param string id : The string to be checked.
+    //
+    bool validIdFormat(std::string id){
+      for(unsigned int it = 0; it < id.length(); it++){
+        char c = id.at(it);
+        if(!((c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c == 45))
+          return false;
+      }
+      return true;
+    }
 
     void startServer(int port){
       server.listen(port);

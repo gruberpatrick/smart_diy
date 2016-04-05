@@ -100,14 +100,14 @@ function SmartClient(){
         oMessage["oResponse"] != "init")
       return;
     // set initialized flag
-    this.sendMessage({"sType":"status","sConnectionHash":oSettings["sConnectionHash"],"sCommand":"get-clients","aParams":["living-room"]});
+    this.sendMessage({"sType":"status","sConnectionHash":oSettings["sConnectionHash"],"sCommand":"get-modules","aParams":["living-room","client1"]});
     this.initialized = true;
   };
 
   // FUNCTION
   // Set client wide values from server
   this.evaluateStatusResponse = function(oMessage){
-    // make data available for modules
+    // TODO: make data available for modules
   };
 
   // FUNCTION
@@ -119,6 +119,7 @@ function SmartClient(){
         typeof oMessage["oResponse"]["sSentType"] == "undefined")
       return;
     // check error code and decide next step -> CURRENTLY NOTHING
+    return;
   };
 
   // FUNCTION
