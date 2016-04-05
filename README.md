@@ -15,5 +15,5 @@ The old version is available here:
 https://github.com/gruberpatrick/smart_diy/tree/8eeae325d8e07692821ed398cc5ef374cbe93cf7
 
 **Documentation:**
-Full documentation available in the "documentation" sub directory. More
+Full documentation available in the "files / doc" sub directory. More
 information will be amended as development continues.
