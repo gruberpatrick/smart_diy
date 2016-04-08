@@ -7,6 +7,8 @@ function SmartClient(){
   // ATTRIBUTES
   this.oWS = null;
   this.initialized = false;
+  this.aOnStatusFuncitons = [];
+  this.oModules = {};
 
   // CONSTRUCTOR
   this.initialize = function(){
@@ -29,10 +31,10 @@ function SmartClient(){
       console.log(oMessage);
       //evaluate basic parameters
       if(typeof oMessage["sType"] == "undefined" || typeof oMessage["sConnectionHash"] == "undefined")
-        this.returnErrorMessage(oMessage, "Invalid Message. Check documentation.");
+        this.returnErrorMessage(oMessage, "Invalid message. Check documentation.", 1);
       else if(oMessage["sConnectionHash"] != oSettings["sConnectionHash"] &&
           oMessage["sType"] != "error") // don't respond to invalid error message to prevent ping pong
-        this.returnErrorMessage(oMessage, "Invalid connection hash. Check documentation.");
+        this.returnErrorMessage(oMessage, "Invalid connection hash. Check documentation.", 2);
       //evaluate message
       if(oMessage["sType"] == "init-response")
         return this.evaluateInitializationResponse(oMessage);
@@ -40,8 +42,12 @@ function SmartClient(){
         return this.evaluateErrorMessage(oMessage);
       else if(oMessage["sType"] == "status-reponse")
         return this.evaluateStatusResponse(oMessage);
+      else if(oMessage["sType"] == "command")
+        return this.evaluateCommand(oMessage);
+      else if(oMessage["sType"] == "command-response")
+        return this.evaluateCommandResponse(oMessage);
       // command not found report error
-      this.returnErrorMessage(oMessage, "Command not found. Check documentation.");
+      this.returnErrorMessage(oMessage, "Command not found. Check documentation.", 3);
     }.bind(this));
     // connection closed
     this.oWS.on("close", function(){
@@ -100,14 +106,15 @@ function SmartClient(){
         oMessage["oResponse"] != "init")
       return;
     // set initialized flag
-    this.sendMessage({"sType":"status","sConnectionHash":oSettings["sConnectionHash"],"sCommand":"get-modules","aParams":["living-room","client1"]});
     this.initialized = true;
+    this.loadModules();
   };
 
   // FUNCTION
   // Set client wide values from server
   this.evaluateStatusResponse = function(oMessage){
-    // TODO: make data available for modules
+    for(var i = 0; i < this.aOnStatusFuncitons.length; i++)
+      if(typeof this.aOnStatusFuncitons[i] != "undefined") this.aOnStatusFuncitons[i](oMessage);
   };
 
   // FUNCTION
@@ -123,10 +130,70 @@ function SmartClient(){
   };
 
   // FUNCTION
+  // Evaluate a command message
+  this.evaluateCommand = function(oMessage){
+    // check if format correct
+    if(typeof oMessage["sClientId"] == "undefined" || typeof oMessage["sGroupId"] == "undefined" || typeof oMessage["sModuleId"] == "undefined" ||
+        typeof oMessage["sCommand"] == "undefined" || typeof oMessage["oReturn"] == "undefined" || typeof oMessage["aParams"] == "undefined")
+      return returnErrorMessage(oMessage, "Initialization incomplete. Check documentation.");
+    else if(typeof this.oModules[oMessage["sModuleId"]] == "undefined") // check if the module exists
+      return returnErrorMessage(oMessage, "Invalid Module Id.");
+    // send command to module
+    if(oMessage["sCommand"] == "help"){
+      oMessage["oResponse"] = require(oSettings["oModules"][oMessage["sModuleId"]]["sPath"] + "/install.json");
+      this.sendMessage(oMessage);
+    }else{
+      this.oModules[oMessage["sModuleId"]].handleCommand(oMessage["sCommand"], oMessage["aParams"]);
+    }
+  };
+
+  // FUNCTION
+  // Evaluate a command response message
+  this.evaluateCommandResponse = function(oMessage){
+    // TODO
+  };
+
+  // ===========================================================================
+
+  // FUNCTION
   // Print logging to console
   this.log = function(sMessage){
     console.log("[CLIENT] " + sMessage);
-  },
+  };
+
+  // FUNCTION
+  // add a new status message handler
+  this.bindOnStatus = function(fCallback){
+    this.aOnStatusFuncitons.push(fCallback);
+    return this.aOnStatusFuncitons.length - 1;
+  };
+
+  // FUNCTION
+  // delete status message handler function
+  this.unbindOnStatus = function(index){
+    delete this.aOnStatusFuncitons[index];
+  };
+
+  // FUNCTION
+  // send status message
+  this.sendStatusMessage = function(sGroupId, sClientId){
+    if(typeof sGroupId == "undefined" && typeof sClientId == "undefined")
+      this.sendMessage({"sType":"status","sConnectionHash":oSettings["sConnectionHash"],"sCommand":"get-groups","aParams":[]});
+    else if(typeof sGroupId != "undefined" && typeof sClientId == "undefined")
+      this.sendMessage({"sType":"status","sConnectionHash":oSettings["sConnectionHash"],"sCommand":"get-clients","aParams":[sGroupId]});
+    else
+      this.sendMessage({"sType":"status","sConnectionHash":oSettings["sConnectionHash"],"sCommand":"get-modules","aParams":[sGroupId, sClientId]});
+  };
+
+  // FUNCITON
+  // load modules as defined in settings
+  this.loadModules = function(){
+    for(var i in oSettings["oModules"]){
+      this.log("Loading '" + oSettings["oModules"][i]["sModuleName"] + "' ...");
+      this.oModules[i] = require(oSettings["oModules"][i]["sPath"] + "/main.js");
+      this.oModules[i].initialize(oSettings["oModules"][i]["aParams"]);
+    }
+  };
 
   // INITIALIZATION
   // fake constructor

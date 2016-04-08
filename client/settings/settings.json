@@ -6,7 +6,7 @@
   "sClientId":"client1",
   "sClientName": "Patrick's Laptop",
   "oModules":{
-    "rhythmbox1": {"sModuleName": "Rhythmbox Patrick", "sPath": "./modules/rhythmbox"},
-    "rhythmbox2": {"sModuleName": "Rhythmbox Other", "sPath": "./modules/rhythmbox"}
+    "rhythmbox1": {"sModuleName": "Rhythmbox Patrick", "sPath": "./modules/rhythmbox", "aParams": []},
+    "other-example-of-same-module": {"sModuleName": "Another EX", "sPath": "./modules/rhythmbox", "aParams": []}
   }
 }

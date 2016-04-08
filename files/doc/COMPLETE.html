@@ -155,12 +155,21 @@
 }
     </code></pre>
     <p>
-      Remotes have to initialize theimselves too. Their "sGroupId" is simply the
-      value "remote". The group ID "remote" is therefore protected. "sClientId"
-      and "sClientName" both need to given too in order for the initialization
-      to be successful. "oModules" can be an empty object in this case.<br />
-      More protected group ID's might be added in future versions of the software.
+      <strong>Protected Group ID's:</strong><br />
+      Some group ID's are protected, as they serve for special purposes. They
+      still need to provide the same data as normal clients.
     </p>
+    <ul>
+      <li>
+        Remotes set their "sGroupId" simply to the value "remote". The group ID
+        "remote" is therefore protected. "sClientId" and "sClientName" both need
+        to given too in order for the initialization to be successful.
+      </li>
+      <li>
+        Clients registering themselves as "broadcast", will receive any message
+        going through the server. Some use cases might require this functionality.
+      </li>
+    </ul>
     <p>
       If successful, the server now sends a "init-response" with the value
       "init".
@@ -249,6 +258,9 @@
 // <strong>sGroupId</strong>: Identification for the group, the client is part of.
 // <strong>sModuleId</strong>: Module identification the command is intended for.
 // <strong>sCommand</strong>: Command to send to the module.
+// <strong>oReturn</strong>: This variable can be set to send the response to a
+//     different client. If this data is invalid, an error will be returned.
+//     If not set, the server adds this data automatically.
 // <strong>aParams</strong>: Some commands (now or in the future) require parameters
 //     that need to be passed along. This is just an array containing
 //     values.
@@ -261,6 +273,10 @@
   "sGroupId": "[GROUP-ID]",
   "sModuleId": "[MODULE-ID]",
   "sCommand": "[COMMAND-TYPE]",
+  ["oReturn": {
+    "sGroupId": "[GROUP-ID]",
+    "sClientId": "[CLIENT-ID]"
+  },]
   "aParams": [...]
 }
     </code></pre>
@@ -273,8 +289,7 @@
 // <strong>sGroupId</strong>: Identification for the group, the client is part of.
 // <strong>sModuleId</strong>: Module identification the command is intended for.
 // <strong>sCommand</strong>: Command to send to the module.
-// <strong>oReturn</strong>: This variable is ADDED BY THE SERVER to facilitate the
-       answer and determine the recipient.
+// <strong>oReturn</strong>: This variable is dependent on the "command" message.
 // <strong>aParams</strong>: Some commands (now or in the future) require parameters
 //     that need to be passed along. This is just an array containing
 //     values.
@@ -348,7 +363,8 @@
       Modules need to provide a "install.json" file, which contains basic
       information about the module, as well as the available commands. The core
       client application will then automatically return an answer to a "help"
-      command.
+      command. The "help" command is therefore protected and not available as a
+      client command.
     </p>
 
     <!-- ################################################################### -->

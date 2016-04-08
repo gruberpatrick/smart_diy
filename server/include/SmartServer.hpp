@@ -14,13 +14,6 @@
 using JSON = nlohmann::json;
 typedef websocketpp::server<websocketpp::config::asio> Server;
 
-/**
- * TODO:
- * - create remote registration (assign remote ID)
- * - create command handler -> add sTo (remote ID)
- * - create command-response handler and send back to request
- */
-
 class SmartServer{
 
   public:
@@ -55,7 +48,7 @@ class SmartServer{
     // @param connection_hdl client : The string to be checked.
     //
     void onOpen(websocketpp::connection_hdl client){
-      std::cout << "[SERVER] Unknown client connected." << std::endl;
+      //std::cout << "[SERVER] Unknown client connected." << std::endl;
     };
 
     // =========================================================================
@@ -82,19 +75,23 @@ class SmartServer{
       else if(protocol.find("sConnectionHash") == protocol.end() ||
           protocol["sConnectionHash"] != settings->getSettings()["sConnectionHash"])
         return returnErrorMessage(client, protocol, "Invalid connection hash. Check documentation.", 2);
+      // check if initialized
+      bool initialized = false;
+      if(getClientStrings(client.second != "")
+        initialized = true;
       // deal with types of messages
-      if(protocol["sType"] == "init")
+      if(protocol["sType"] == "init" && !initialized)
         return evaluateInitialization(client, protocol);
-      else if(protocol["sType"] == "status")
+      else if(protocol["sType"] == "status" && initialized)
         return evaluateStatus(client, protocol);
-      else if(protocol["sType"] == "command")
+      else if(protocol["sType"] == "command" && initialized)
         return evaluateCommand(client, protocol);
-      else if(protocol["sType"] == "command-response")
+      else if(protocol["sType"] == "command-response" && initialized)
         return evaluateCommandResponse(client, protocol);
-      else if(protocol["sType"] == "error")
+      else if(protocol["sType"] == "error" && initialized)
         return evaluateErrorMessage(client, protocol);
       // invalid message found, reply with error
-      return returnErrorMessage(client, protocol, "Command currently not supported. Check documentation.", 3);
+      return returnErrorMessage(client, protocol, "There was a problem with your command. Check documentation.", 3);
     };
 
     // =========================================================================
@@ -168,7 +165,7 @@ class SmartServer{
       client_list[client] = std::make_pair(group_id, client_id);
       // report message
       std::pair<std::string, std::string> client_string = getClientStrings(client);
-      std::cout << "[SERVER][MESSAGE][INIT][FROM:" << client_string.first << "," << client_string.second << "] => " << protocol.dump() << std::endl;
+      log("[MESSAGE][INIT][FROM:" + client_string.first + "," + client_string.second + "] => " + protocol.dump());
       // prepare message and send
       protocol["sType"] = "init-response";
       protocol["oResponse"] = "init";
@@ -184,7 +181,7 @@ class SmartServer{
     void evaluateStatus(websocketpp::connection_hdl client, JSON protocol){
       // evaluate the message
       if(protocol.find("sCommand") == protocol.end() || protocol.find("aParams") == protocol.end())
-        return returnErrorMessage(client, protocol, "Status request invalid. Check documentation.", 0);
+        return returnErrorMessage(client, protocol, "Status request incomplete. Check documentation.", 0);
       // change the message type
       protocol["sType"] = "status-reponse";
       JSON groups_object = groups->getGroups();
@@ -199,7 +196,7 @@ class SmartServer{
       }
       // report message
       std::pair<std::string, std::string> client_string = getClientStrings(client);
-      std::cout << "[SERVER][MESSAGE][STATUS][FROM:" << client_string.first << "," << client_string.second << "] => " << protocol.dump() << std::endl;
+      log("[MESSAGE][STATUS][FROM:" + client_string.first + "," + client_string.second + "] => " + protocol.dump());
       // set the appropriate response
       if(protocol["sCommand"] == "get-groups" && protocol["aParams"].size() == 0)
         protocol["oResponse"] = groups_object;
@@ -232,7 +229,7 @@ class SmartServer{
         return;
       // report message
       std::pair<std::string, std::string> client_string = getClientStrings(client);
-      std::cout << "[SERVER][MESSAGE][ERROR][FROM:" << client_string.first << "," << client_string.second << "] => " << protocol.dump() << std::endl;
+      log("[MESSAGE][INIT][FROM:" + client_string.first + "," + client_string.second + "] => " + protocol.dump());
       // send error message to correct recipient
       sendMessage(tmp_client.second, protocol);
     };
@@ -274,7 +271,27 @@ class SmartServer{
     // @param JSON protocol         : The JSON object of the received message.
     //
     void evaluateCommand(websocketpp::connection_hdl client, JSON protocol){
-      // TODO: Add oReturn variable; Send to client;
+      // TODO: test
+      // check if protocol valid
+      if(protocol.find("sClientId") == protocol.end() || protocol.find("sGroupId") == protocol.end() || protocol.find("sModuleId") == protocol.end() ||
+          protocol.find("sCommand") == protocol.end() || protocol.find("aParams") == protocol.end())
+        return returnErrorMessage(client, protocol, "Command message incomplete. Check documentation.", 0);
+      // find client for return and change if not given by message
+      std::pair<std::string, std::string> client_string = getClientStrings(client);
+      log("[MESSAGE][INIT][FROM:" + client_string.first + "," + client_string.second + "] => " + protocol.dump());
+      if(protocol.find("oReturn") == protocol.end())
+        protocol["oReturn"] = {{"sGroupId", client_string.first}, {"sClientId", client_string.second}};
+      else{
+        if(protocol["oReturn"].find("sGroupId") == protocol["oReturn"].end() || protocol["oReturn"].find("sClientId") == protocol["oReturn"].end())
+          return returnErrorMessage(client, protocol, "The 'oReturn' data is incomplete.", 0);
+        else if(!getClientObject(protocol["oReturn"]["sGroupId"], protocol["oReturn"]["sClientId"]).first)
+          return returnErrorMessage(client, protocol, "The 'oReturn' data is invalid.", 0);
+      }
+      // find intended client and send
+      std::pair<bool, websocketpp::connection_hdl> tmp_client = getClientObject(protocol["sGroupId"], protocol["sClientId"]);
+      if(tmp_client.first)
+        return sendMessage(tmp_client.second, protocol);
+      return returnErrorMessage(client, protocol, "There was a problem with your message. Try again.", 11);
     };
 
     // =========================================================================
@@ -285,7 +302,19 @@ class SmartServer{
     // @param JSON protocol         : The JSON object of the received message.
     //
     void evaluateCommandResponse(websocketpp::connection_hdl client, JSON protocol){
-      // TODO: Find correct client from oReturn; Send to client;
+      // TODO: test
+      // check if message valid
+      if(protocol.find("sClientId") == protocol.end() || protocol.find("sGroupId") == protocol.end() || protocol.find("sModuleId") == protocol.end() ||
+          protocol.find("sCommand") == protocol.end() || protocol.find("aParams") == protocol.end() || protocol.find("oResponse") == protocol.end() ||
+          protocol.find("oReturn") == protocol.end() || protocol["oReturn"].find("sGroupId") == protocol["oReturn"].end() ||
+          protocol["oReturn"].find("sClientId") == protocol["oReturn"].end())
+        return returnErrorMessage(client, protocol, "Command response message incomplete. Check documentation.", 0);
+      // check if oReturn data valid
+      std::pair<bool, websocketpp::connection_hdl> tmp_client = getClientObject(protocol["oReturn"]["sGroupId"], protocol["oReturn"]["sClientId"]);
+      if(!tmp_client.first)
+        return returnErrorMessage(client, protocol, "The 'oReturn' data is invalid.", 0);
+      // send data to client
+      sendMessage(tmp_client.second, protocol);
     };
 
     // =========================================================================
@@ -294,13 +323,26 @@ class SmartServer{
     // @param string id : The string to be checked.
     //
     bool validIdFormat(std::string id){
+      // check if id length is decent
+      if(id.length() < 3)
+        return false;
+      // check char values of string
       for(unsigned int it = 0; it < id.length(); it++){
         char c = id.at(it);
         if(!((c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c == 45))
           return false;
       }
       return true;
-    }
+    };
+
+    // =========================================================================
+    // Centralized logging function.
+    // -------------------------------------------------------------------------
+    // @param string message : The message to be printed.
+    //
+    void log(std::string message){
+      std::cout << "[SERVER]" << message << std::endl;
+    };
 
     // =========================================================================
     // Startup server.
