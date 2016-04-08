@@ -25,6 +25,10 @@ class SmartServer{
 
   public:
 
+    // =========================================================================
+    // CONSTRUCTOR
+    // -------------------------------------------------------------------------
+    //
     SmartServer(Settings* settings_object, Groups* groups_object){
       groups = groups_object;
       settings = settings_object;
@@ -36,22 +40,41 @@ class SmartServer{
       server.clear_access_channels(websocketpp::log::alevel::all);
     };
 
+    // =========================================================================
+    // DESTRUCTOR
+    // -------------------------------------------------------------------------
+    //
     ~SmartServer(){
       delete groups;
       delete settings;
     };
 
+    // =========================================================================
+    // On open event from the WebSocket.
+    // -------------------------------------------------------------------------
+    // @param connection_hdl client : The string to be checked.
+    //
     void onOpen(websocketpp::connection_hdl client){
       std::cout << "[SERVER] Unknown client connected." << std::endl;
     };
 
+    // =========================================================================
+    // On close event from the WebSocket.
+    // -------------------------------------------------------------------------
+    // @param connection_hdl client : The string to be checked.
+    //
     void onClose(websocketpp::connection_hdl client){
       groups->removeClient(client_list[client].first, client_list[client].second); // remove client from group
       client_list.erase(client); // delete client object
     };
 
+    // =========================================================================
+    // On message event from the WebSocket.
+    // -------------------------------------------------------------------------
+    // @param connection_hdl client : The string to be checked.
+    // @param message_ptr message   : The received message.
+    //
     void onMessage(websocketpp::connection_hdl client, Server::message_ptr message){
-      std::cout << "[SERVER] Message: " << message->get_payload() << std::endl;
       JSON protocol = JSON::parse(message->get_payload());
       // check basic connection information (sType && sConnectionHash)
       if(protocol.find("sType") == protocol.end())
@@ -66,17 +89,33 @@ class SmartServer{
         return evaluateStatus(client, protocol);
       else if(protocol["sType"] == "command")
         return evaluateCommand(client, protocol);
+      else if(protocol["sType"] == "command-response")
+        return evaluateCommandResponse(client, protocol);
       else if(protocol["sType"] == "error")
         return evaluateErrorMessage(client, protocol);
       // invalid message found, reply with error
       return returnErrorMessage(client, protocol, "Command currently not supported. Check documentation.", 3);
     };
 
+    // =========================================================================
+    // Send a message to a given client.
+    // -------------------------------------------------------------------------
+    // @param connection_hdl client : The string to be checked.
+    // @param JSON protocol         : The protocol received.
+    //
     void sendMessage(websocketpp::connection_hdl client, JSON message){
       std::string tmp_message = message.dump();
       server.send(client, tmp_message, websocketpp::frame::opcode::text);
     }
 
+    // =========================================================================
+    // Return an error message containing a message and code.
+    // -------------------------------------------------------------------------
+    // @param connection_hdl client : The string to be checked.
+    // @param JSON protocol         : The protocol received.
+    // @param string message        : The message to enclose.
+    // @param int error_code        : Attached error code.
+    //
     void returnErrorMessage(websocketpp::connection_hdl client, JSON protocol, std::string message, int error_code){
       std::string old_message_type = protocol["sType"];
       protocol["sType"] = "error";
@@ -84,6 +123,11 @@ class SmartServer{
       sendMessage(client, protocol);
     };
 
+    // =========================================================================
+    // Check if the format of the received module message is correct.
+    // -------------------------------------------------------------------------
+    // @param JSON modules : The modules object from the initialization message.
+    //
     bool evaluateModulesFormat(JSON modules){
       for(JSON::iterator it = modules.begin(); it != modules.end(); it++){
         if(it.value().find("sModuleName") == it.value().end())
@@ -92,6 +136,12 @@ class SmartServer{
       return true;
     };
 
+    // =========================================================================
+    // Evaluate the initialization message and send a response.
+    // -------------------------------------------------------------------------
+    // @param connection_hdl client : The string to be checked.
+    // @param JSON protocol         : The protocol received.
+    //
     void evaluateInitialization(websocketpp::connection_hdl client, JSON protocol){
       // evaluate the message
       if(protocol.find("sGroupId") == protocol.end() || protocol.find("sClientId") == protocol.end() ||
@@ -116,12 +166,21 @@ class SmartServer{
       client_object["oModules"] = protocol["oModules"];
       groups->addClient(group_id, client_object);
       client_list[client] = std::make_pair(group_id, client_id);
+      // report message
+      std::pair<std::string, std::string> client_string = getClientStrings(client);
+      std::cout << "[SERVER][MESSAGE][INIT][FROM:" << client_string.first << "," << client_string.second << "] => " << protocol.dump() << std::endl;
       // prepare message and send
       protocol["sType"] = "init-response";
       protocol["oResponse"] = "init";
       sendMessage(client, protocol);
     };
 
+    // =========================================================================
+    // Evaluate the status message and send a response.
+    // -------------------------------------------------------------------------
+    // @param connection_hdl client : The string to be checked.
+    // @param JSON protocol         : The protocol received.
+    //
     void evaluateStatus(websocketpp::connection_hdl client, JSON protocol){
       // evaluate the message
       if(protocol.find("sCommand") == protocol.end() || protocol.find("aParams") == protocol.end())
@@ -138,6 +197,9 @@ class SmartServer{
         group_id = protocol["aParams"][0];
         client_id = protocol["aParams"][1];
       }
+      // report message
+      std::pair<std::string, std::string> client_string = getClientStrings(client);
+      std::cout << "[SERVER][MESSAGE][STATUS][FROM:" << client_string.first << "," << client_string.second << "] => " << protocol.dump() << std::endl;
       // set the appropriate response
       if(protocol["sCommand"] == "get-groups" && protocol["aParams"].size() == 0)
         protocol["oResponse"] = groups_object;
@@ -151,20 +213,79 @@ class SmartServer{
       sendMessage(client, protocol);
     };
 
+    // =========================================================================
+    // Evaluate the error message and see of it needs to be transferred to a
+    // client.
+    // -------------------------------------------------------------------------
+    // @param connection_hdl client : The string to be checked.
+    // @param JSON protocol         : The protocol received.
+    //
     void evaluateErrorMessage(websocketpp::connection_hdl client, JSON protocol){
-      if(protocol.find("oReturn") == protocol.end()) // error message is ment for server -> doesn't care
+      // TODO: test
+      // error message is ment for server or not valid format -> doesn't care
+      if(protocol.find("oReturn") == protocol.end() || protocol["oReturn"].find("sGroupId") == protocol["oReturn"].end() ||
+          protocol["oReturn"].find("sClientId") == protocol["oReturn"].end())
         return;
-      // TODO: Send error message to client or remote;
+      // get the client object from the map
+      std::pair<bool, websocketpp::connection_hdl> tmp_client = getClientObject(protocol["oReturn"]["sGroupId"], protocol["oReturn"]["sClientId"]);
+      if(!tmp_client.first)
+        return;
+      // report message
+      std::pair<std::string, std::string> client_string = getClientStrings(client);
+      std::cout << "[SERVER][MESSAGE][ERROR][FROM:" << client_string.first << "," << client_string.second << "] => " << protocol.dump() << std::endl;
+      // send error message to correct recipient
+      sendMessage(tmp_client.second, protocol);
     };
+
+    // =========================================================================
+    // Get client object based on group and client id.
+    // -------------------------------------------------------------------------
+    // @param string group_id  : String containing the group id.
+    // @param string client_id : String containing the client id.
+    //
+    std::pair<bool, websocketpp::connection_hdl> getClientObject(std::string group_id, std::string client_id){
+      for(std::map<websocketpp::connection_hdl, std::pair<std::string, std::string>, std::owner_less<websocketpp::connection_hdl> >::iterator it = client_list.begin();
+          it != client_list.end(); it++)
+      {
+        if(it->second.first == group_id && it->second.second == client_id)
+          return std::make_pair(true, it->first);
+      }
+      return std::make_pair(false, websocketpp::connection_hdl());
+    }
+
+    // =========================================================================
+    // Get client strings based on client object.
+    // -------------------------------------------------------------------------
+    // @param connection_hdl client : The client to be found.
+    //
+    std::pair<std::string, std::string> getClientStrings(websocketpp::connection_hdl client){
+      std::map<websocketpp::connection_hdl, std::pair<std::string, std::string>, std::owner_less<websocketpp::connection_hdl> >::iterator it = client_list.find(client);
+      // check if client found
+      if(it == client_list.end())
+        return std::make_pair("", "");
+      // return correct client
+      return it->second;
+    }
 
     // =========================================================================
     // Evaluate the received command for correctness and send to client.
     // -------------------------------------------------------------------------
-    // @param conneciton_hdl client : WebSocket client object.
+    // @param connection_hdl client : WebSocket client object.
     // @param JSON protocol         : The JSON object of the received message.
     //
     void evaluateCommand(websocketpp::connection_hdl client, JSON protocol){
       // TODO: Add oReturn variable; Send to client;
+    };
+
+    // =========================================================================
+    // Evaluate the received command response for correctness and send to
+    // correct client.
+    // -------------------------------------------------------------------------
+    // @param connection_hdl client : WebSocket client object.
+    // @param JSON protocol         : The JSON object of the received message.
+    //
+    void evaluateCommandResponse(websocketpp::connection_hdl client, JSON protocol){
+      // TODO: Find correct client from oReturn; Send to client;
     };
 
     // =========================================================================
@@ -181,6 +302,11 @@ class SmartServer{
       return true;
     }
 
+    // =========================================================================
+    // Startup server.
+    // -------------------------------------------------------------------------
+    // @param int port : The port on which the server operates.
+    //
     void startServer(int port){
       server.listen(port);
       server.start_accept();

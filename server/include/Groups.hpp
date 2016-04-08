@@ -30,14 +30,14 @@ class Groups{
       std::string client_id = client["sClientId"];
       client.erase("sClientId");
       groups[group_id]["oClients"][client_id] = client; // push client to group
-      std::cout << "Client added: " << groups.dump() << std::endl;
+      //std::cout << "Client added: " << groups.dump() << std::endl;
     };
 
     void removeClient(std::string group_id, std::string client_id){
       if(clientIdExistsInGroup(group_id, client_id) != 1) // check if parameters are valid
         return;
       groups[group_id]["oClients"].erase(client_id);
-      std::cout << "Client removed: " << groups.dump() << std::endl;
+      //std::cout << "Client removed: " << groups.dump() << std::endl;
     };
 
     bool groupExists(std::string group_id){
