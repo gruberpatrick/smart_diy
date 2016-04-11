@@ -2,6 +2,12 @@
 var oWS = require("ws");
 var oSettings = require("./settings/settings.json");
 
+// #############################################################################
+//
+//    SMART DIY CLIENT OBJECT
+//
+// #############################################################################
+
 function SmartClient(){
 
   // ATTRIBUTES
@@ -36,18 +42,18 @@ function SmartClient(){
           oMessage["sType"] != "error") // don't respond to invalid error message to prevent ping pong
         this.returnErrorMessage(oMessage, "Invalid connection hash. Check documentation.", 2);
       //evaluate message
-      if(oMessage["sType"] == "init-response")
+      if(oMessage["sType"] == "init-response" && !this.initialized)
         return this.evaluateInitializationResponse(oMessage);
-      else if(oMessage["sType"] == "error")
+      else if(oMessage["sType"] == "error" && this.initialized)
         return this.evaluateErrorMessage(oMessage);
-      else if(oMessage["sType"] == "status-reponse")
+      else if(oMessage["sType"] == "status-response" && this.initialized)
         return this.evaluateStatusResponse(oMessage);
-      else if(oMessage["sType"] == "command")
+      else if(oMessage["sType"] == "command" && this.initialized)
         return this.evaluateCommand(oMessage);
-      else if(oMessage["sType"] == "command-response")
+      else if(oMessage["sType"] == "command-response" && this.initialized)
         return this.evaluateCommandResponse(oMessage);
       // command not found report error
-      this.returnErrorMessage(oMessage, "Command not found. Check documentation.", 3);
+      this.returnErrorMessage(oMessage, "There was a problem with your command. Check documentation.", 3);
     }.bind(this));
     // connection closed
     this.oWS.on("close", function(){
@@ -143,7 +149,7 @@ function SmartClient(){
       oMessage["oResponse"] = require(oSettings["oModules"][oMessage["sModuleId"]]["sPath"] + "/install.json");
       this.sendMessage(oMessage);
     }else{
-      this.oModules[oMessage["sModuleId"]].handleCommand(oMessage["sCommand"], oMessage["aParams"]);
+      this.oModules[oMessage["sModuleId"]].handleCommand(oMessage);
     }
   };
 
@@ -190,7 +196,7 @@ function SmartClient(){
   this.loadModules = function(){
     for(var i in oSettings["oModules"]){
       this.log("Loading '" + oSettings["oModules"][i]["sModuleName"] + "' ...");
-      this.oModules[i] = require(oSettings["oModules"][i]["sPath"] + "/main.js");
+      this.oModules[i] = require("./modules/" + oSettings["oModules"][i]["sModuleId"] + "/main.js");
       this.oModules[i].initialize(oSettings["oModules"][i]["aParams"]);
     }
   };
@@ -201,4 +207,18 @@ function SmartClient(){
 
 };
 
-SmartClient();
+var oSC = new SmartClient();
+
+// #############################################################################
+//
+//    GLOBALLY AVAILABLE FUNCTIONS
+//
+// #############################################################################
+
+// FUNCTION
+// send a command response
+global.sendCommandResponse = function(oMessage, oResponse){
+  oMessage["sType"] = "command-response";
+  oMessage["oResponse"] = oResponse;
+  oSC.sendMessage(oMessage);
+};

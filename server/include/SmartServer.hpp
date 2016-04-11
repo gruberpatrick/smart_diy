@@ -77,7 +77,7 @@ class SmartServer{
         return returnErrorMessage(client, protocol, "Invalid connection hash. Check documentation.", 2);
       // check if initialized
       bool initialized = false;
-      if(getClientStrings(client.second != "")
+      if(getClientStrings(client).second != "")
         initialized = true;
       // deal with types of messages
       if(protocol["sType"] == "init" && !initialized)
@@ -183,7 +183,7 @@ class SmartServer{
       if(protocol.find("sCommand") == protocol.end() || protocol.find("aParams") == protocol.end())
         return returnErrorMessage(client, protocol, "Status request incomplete. Check documentation.", 0);
       // change the message type
-      protocol["sType"] = "status-reponse";
+      protocol["sType"] = "status-response";
       JSON groups_object = groups->getGroups();
       // convert necessary data
       std::string group_id = "";
