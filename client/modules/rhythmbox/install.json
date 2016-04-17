@@ -5,7 +5,7 @@
 
   ],
   "aAPTRequirements": [
-    "rhythmbox"
+    "rhythmbox", "rhythmbox-client"
   ],
   "oCommands": {
     "play": "Resume playback.",
