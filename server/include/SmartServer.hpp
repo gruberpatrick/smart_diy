@@ -229,7 +229,7 @@ class SmartServer{
         return;
       // report message
       std::pair<std::string, std::string> client_string = getClientStrings(client);
-      log("[MESSAGE][INIT][FROM:" + client_string.first + "," + client_string.second + "] => " + protocol.dump());
+      log("[MESSAGE][ERROR][FROM:" + client_string.first + "," + client_string.second + "] => " + protocol.dump());
       // send error message to correct recipient
       sendMessage(tmp_client.second, protocol);
     };
@@ -278,7 +278,7 @@ class SmartServer{
         return returnErrorMessage(client, protocol, "Command message incomplete. Check documentation.", 0);
       // find client for return and change if not given by message
       std::pair<std::string, std::string> client_string = getClientStrings(client);
-      log("[MESSAGE][INIT][FROM:" + client_string.first + "," + client_string.second + "] => " + protocol.dump());
+      log("[MESSAGE][COMMAND][FROM:" + client_string.first + "," + client_string.second + "] => " + protocol.dump());
       if(protocol.find("oReturn") == protocol.end())
         protocol["oReturn"] = {{"sGroupId", client_string.first}, {"sClientId", client_string.second}};
       else{

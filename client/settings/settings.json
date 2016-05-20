@@ -7,6 +7,6 @@
   "sClientName": "Patrick's Laptop",
   "oModules":{
     "rhythmbox1": {"sModuleId": "rhythmbox", "sModuleName": "Rhythmbox", "aParams": []},
-    "other-example-of-same-module": {"sModuleId": "rhythmbox", "sModuleName": "Another", "aParams": []}
+    "font-gate": {"sModuleId": "relais-switch", "sModuleName": "Front Gate", "aParams": [[0,1], ["Stopped", "Moving"], 5000, "notify-send '%%s' &"]}
   }
 }
