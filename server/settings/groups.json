@@ -1,6 +1,0 @@
-{
-  "living-room":{ "sName":"Living Room", "oClients":{} },
-  "pool-house": { "sName":"Pool House", "oClients":{} },
-  "remote": { "sName":"Remotes", "oClients":{} },
-  "broadcast": { "sName": "Broadcast", "oClients":{} }
-}
