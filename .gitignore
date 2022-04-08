@@ -1,2 +1,4 @@
-/client/node_modules/*
-/server/smart_diy_server 
+server/.auth
+server/.extensions
+*.cpython*
+*__pycache__*
