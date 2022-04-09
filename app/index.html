@@ -11,6 +11,9 @@
         function goRight(socket) {
           sendAction(socket, "lgwebos@192.168.1.192", "right", [])
         }
+        function moveMouse(socket) {
+          sendAction(socket, "lgwebos@192.168.1.192", "move", [10, 10])
+        }
         // Create WebSocket connection.
         const socket = new WebSocket('ws://localhost:8765');
         // Connection opened
@@ -32,10 +35,10 @@
         // Listen for messages
         socket.addEventListener('message', function (event) {
           console.log('Message from server ', event.data);
-          // setInterval(function(){
-          //   goRight(socket);
-          // }, 1000);
-          sendAction(socket, "lgwebos@192.168.1.192", "app:amazon prime video", [])
+          setInterval(function(){
+            moveMouse(socket);
+          }, 1000);
+          // sendAction(socket, "lgwebos@192.168.1.192", "app:amazon prime video", [])
         });
       </script>
   </body>

@@ -2,6 +2,7 @@ import logging
 
 from pywebostv.connection import WebOSClient
 from pywebostv.controls import InputControl, ApplicationControl
+from urllib3 import Timeout
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -10,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 class Extension:
 
     _available_actions = [
-        "up", "down", "left", "right", "enter", "home", "back"
+        "up", "down", "left", "right", "enter", "home", "back", "move"
     ]
     _input_actions = {
         "up": "up",
@@ -20,6 +21,7 @@ class Extension:
         "enter": "ok",
         "home": "home",
         "back": "back",
+        "move": "move",
     }
     _app_actions = {}
 
@@ -28,7 +30,10 @@ class Extension:
         self._extension_data = extension_data
         if self._extension_data.get("params", {}).get("host") is None:
             raise ValueError("Extension 'lgwebos' requires a 'host' parameter.")
-        self.setup(install_path)
+        try:
+            self.setup(install_path)
+        except TimeoutError:
+            log.exception("Setup for 'lgwebos' timed out.")
 
     def setup(self, install_path):
         # create the store;
@@ -38,7 +43,7 @@ class Extension:
         # make sure we have a client key set up;
         self._client = WebOSClient(self._extension_data["params"]["host"])
         self._client.connect()
-        for status in self._client.register(self._extension_data["store"]):
+        for status in self._client.register(self._extension_data["store"], timeout=2):
             if status == WebOSClient.PROMPTED:
                 log.info("Please accept the connect on the TV!")
             elif status == WebOSClient.REGISTERED:
