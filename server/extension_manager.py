@@ -1,6 +1,7 @@
 import json
 import logging
 import pip
+import sys
 
 import importlib.util
 
@@ -25,12 +26,14 @@ class ExtensionManager:
             try:
                 # self.install_requirements(f"../extensions/{ext_name}/requirements.txt")
                 ext = self.import_extension(ext_name, extension)
-                self._extensions[ext.get_target()] = {
-                    "extension": ext_name,
-                    "extension_handler": ext,
-                    "settings": extension,
-                    "availableActions": ext._available_actions,
-                }
+                targets = ext.get_targets()
+                for target in targets:
+                    self._extensions[target] = {
+                        "extension": ext_name,
+                        "extension_handler": ext,
+                        "settings": extension,
+                        "availableActions": ext._available_actions,
+                    }
             except FileNotFoundError as e:
                 log.exception(e)
         log.info(f"Extensions loaded: {self._extensions}")
@@ -40,11 +43,7 @@ class ExtensionManager:
         spec = importlib.util.spec_from_file_location(f"module.{ext_name}", f"../extensions/{ext_name}/main.py")
         ext = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(ext)
-        ext = ext.Extension(
-            extension,
-            em=self,
-            install_path=f"../extensions/{ext_name}/requirements.txt",
-        )
+        ext = ext.Extension(extension, em=self)
         return ext
 
     def install_requirements(self, requirements_path):

@@ -92,6 +92,8 @@ class Server:
         await self.send(
             ws,
             {
+                "target": "server",
+                "action": "register",
                 "success": True,
                 "connectedClients": [
                     {"target": target, "extension": client["extension"], "availableActions": client["availableActions"]}

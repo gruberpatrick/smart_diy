@@ -2,7 +2,6 @@ import logging
 
 from pywebostv.connection import WebOSClient
 from pywebostv.controls import InputControl, ApplicationControl
-from urllib3 import Timeout
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -11,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 class Extension:
 
     _available_actions = [
-        "up", "down", "left", "right", "enter", "home", "back", "move"
+        "up", "down", "left", "right", "enter", "home", "back", "move", "scroll",
     ]
     _input_actions = {
         "up": "up",
@@ -22,23 +21,23 @@ class Extension:
         "home": "home",
         "back": "back",
         "move": "move",
+        "scroll": "scroll",
     }
     _app_actions = {}
 
-    def __init__(self, extension_data, em=None, install_path=None):
+    def __init__(self, extension_data, em=None):
         self._em = em
         self._extension_data = extension_data
         if self._extension_data.get("params", {}).get("host") is None:
             raise ValueError("Extension 'lgwebos' requires a 'host' parameter.")
         try:
-            self.setup(install_path)
+            self.setup()
         except TimeoutError:
             log.exception("Setup for 'lgwebos' timed out.")
 
-    def setup(self, install_path):
+    def setup(self):
         # create the store;
         if self._extension_data.get("store") is None:
-            self._em.install_requirements(install_path)
             self._extension_data["store"] = {}
         # make sure we have a client key set up;
         self._client = WebOSClient(self._extension_data["params"]["host"])
@@ -59,12 +58,12 @@ class Extension:
             self._available_actions.append(f"app:{app_title}")
             self._app_actions[f"app:{app_title}"] = app
 
-    def get_target(self):
+    def get_targets(self):
         extension_name = self._extension_data["extension"]
         host = self._extension_data["params"]["host"]
-        return (
-            f"{extension_name}@{host}"
-        )
+        return [
+            f"{extension_name}-->{host}"
+        ]
 
     def run(self, action, params=None):
         # get the correct action form the InputControl class;

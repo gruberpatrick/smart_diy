@@ -1,0 +1,24 @@
+{
+  "name": "smart-diy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "smart-diy",
+  "author": "Patrick Gruber",
+  "keywords": [
+    "gatsby"
+  ],
+  "scripts": {
+    "develop": "gatsby develop",
+    "start": "gatsby develop",
+    "build": "gatsby build",
+    "serve": "gatsby serve",
+    "clean": "gatsby clean"
+  },
+  "dependencies": {
+    "bootstrap": "^5.1.3",
+    "gatsby": "^4.11.2",
+    "react": "^17.0.1",
+    "react-bootstrap": "^2.2.3",
+    "react-dom": "^17.0.1"
+  }
+}
